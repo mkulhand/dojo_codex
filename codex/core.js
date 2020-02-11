@@ -1,6 +1,15 @@
-var __VORTEX_ADDR_ = 'http://127.0.0.1:3000/vortex/';
+// var __VORTEX_ADDR_ = 'http://127.0.0.1:3000/vortex/';
+var __VORTEX_ADDR_ = 'http://127.0.0.1/vortex/';
 var __CLIENT_NAME_ = 'dojo';
 var __CODEX_DATA_ = {};
+
+const _CDX_LEFT_ESCAPED_	 = '\\[cdx';
+const _CDX_LEFT_ 			 ='[cdx';
+const _CDX_RIGHT_			 = 'cdx]';
+const _CDX_END_LOOP_ESCAPED_ = _CDX_LEFT_ESCAPED_+' endloop '+_CDX_RIGHT_;
+const _CDX_END_LOOP_		 = _CDX_LEFT_+' endloop '+_CDX_RIGHT_;
+
+var sCurrentPage = '';
 
 async function codex_init()
 {
@@ -8,31 +17,48 @@ async function codex_init()
 
 	console.log(__CODEX_DATA_);
 
-	codex_parseHTML('home', 'content');
+	codex_parseCodex('home', 'content');
 }
 
-function codex_parseHTML(sPageName, sContainerId)
+function codex_parseCodex(sPageName, sContainerId)
 {
 	let req = new XMLHttpRequest();
 	req.open('GET', './page/'+sPageName+'.html');
 	req.onload = function()
 	{
-		let sPage = req.response;
+		sCurrentPage = req.response;
 
-		while((nStart = sPage.search("\\[cdx")) != -1)
+		while((nStart = sCurrentPage.search(_CDX_LEFT_ESCAPED_)) != -1)
 		{
-			let sCdx = sPage.substr(nStart+4);
-			let nEnd = sCdx.search('cdx]');
-			sCdx = sCdx.substr(0, nEnd);
-			sPage = sPage.replace('[cdx'+sCdx+'cdx]', codex_parseCodex(sCdx));
+			sCdx = string_searchContain(sCurrentPage, _CDX_LEFT_ESCAPED_, _CDX_RIGHT_);
+			codex_parseCdx(sCdx);
 		}
 
-		document.getElementById(sContainerId).innerHTML = sPage;
+		// console.log(sCurrentPage);
+
+		document.getElementById(sContainerId).innerHTML = sCurrentPage;
 	}
 	req.send();
 }
 
-function codex_parseCodex(sCdx) {
+function codex_parseCdx(sCdx) {
+	let ret = '';
+
+	let tbCdx = sCdx.trim().split('.');
+
+	let sRessource = tbCdx[0];
+
+	if (sRessource == 'loop')
+	{
+		codex_parseLoop(sCdx, tbCdx[1]);
+	}
+	else
+	{
+		codex_parseRessource(sCdx);
+	}
+}
+
+function codex_parseRessource(sCdx) {
 	let tbCdx = sCdx.trim().split('.');
 
 	let sRessource = tbCdx[0];
@@ -45,9 +71,32 @@ function codex_parseCodex(sCdx) {
 		nRess = tbRessource[1];
 	}
 
-	let ret = __CODEX_DATA_[sRessource][nRess][sAttribute];
+	sCurrentPage = sCurrentPage.replace(_CDX_LEFT_+sCdx+_CDX_RIGHT_, __CODEX_DATA_[sRessource][nRess][sAttribute]);
+}
 
-	return ret;
+function codex_parseLoop(sCdx, sRessource)
+{
+	let ret = '';
+
+	sComponent = string_searchContain(sCurrentPage, _CDX_LEFT_ESCAPED_+sCdx+_CDX_RIGHT_, _CDX_END_LOOP_ESCAPED_);
+
+	__CODEX_DATA_[sRessource].forEach((r, i) => {
+		let sSubCdx = '';
+		let sSaveComponent = sComponent;
+		let sResultComponent = sComponent;
+		let tbSubCdx = [];
+		while ((sSubCdx = string_searchContain(sSaveComponent, _CDX_LEFT_ESCAPED_, _CDX_RIGHT_))) {
+			let tbSubCdx = sSubCdx.split('.');
+			tbSubCdx[0] = tbSubCdx[0]+'-'+i;
+			sResultComponent = sResultComponent.replace(sSubCdx, tbSubCdx.join('.'));
+			sSaveComponent = sSaveComponent.replace(_CDX_LEFT_+sSubCdx+_CDX_RIGHT_, '');
+		}
+		ret += sResultComponent;
+	});
+
+	let sComponentReplace = _CDX_LEFT_+sCdx+_CDX_RIGHT_+sComponent+_CDX_END_LOOP_;
+
+	sCurrentPage = sCurrentPage.replace(sComponentReplace, ret);
 }
 
 function codex_API(sRoute)

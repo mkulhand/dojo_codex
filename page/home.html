@@ -1,4 +1,20 @@
 <h1>IT'S BRITNEY BITCH</h1>
 
-<h3>[cdx discipline-0.nom cdx]</h3>
-<img src="[cdx discipline-0.photo cdx]">
+<div id="disc-menu">
+	[cdx loop.discipline cdx]
+		<h3>[cdx discipline.nom cdx]</h3>
+		[cdx discipline.prez cdx]
+	[cdx endloop cdx]
+</div>
+
+<style>
+	#disc-menu {
+		display: flex;
+		flex-direction: row;
+	}
+	#disc-menu > h3 {
+		background-color: blue;
+		color: white;
+		margin: 0 15px;
+	}
+</style>
