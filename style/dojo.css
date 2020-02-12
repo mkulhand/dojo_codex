@@ -1,0 +1,8 @@
+
+:root {
+	--prim-color: #043465;
+}
+
+body {
+	color: var(--prim-color);
+}

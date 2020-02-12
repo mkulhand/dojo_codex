@@ -1,10 +1,4 @@
 
-function string_searchAfterIndex(sHaystack, sNeedle, nIndex)
-{
-	sHaystack = sHaystack.substr(nIndex);
-	return sHaystack.search(sNeedle);
-}
-
 function string_searchContain(sHaystack, sLeft, sRight)
 {
 	let nStart = sHaystack.search(sLeft);

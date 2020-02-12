@@ -1,7 +1,8 @@
-// var __VORTEX_ADDR_ = 'http://127.0.0.1:3000/vortex/';
-var __VORTEX_ADDR_ = 'http://127.0.0.1/vortex/';
+var __VORTEX_ADDR_ = 'http://127.0.0.1:3000/vortex/';
+// var __VORTEX_ADDR_ = 'http://127.0.0.1/vortex/';
 var __CLIENT_NAME_ = 'dojo';
 var __CODEX_DATA_ = {};
+// var __CODEX_CONFIG_ = {};
 
 const _CDX_LEFT_ESCAPED_	 = '\\[cdx';
 const _CDX_LEFT_ 			 ='[cdx';
@@ -13,11 +14,30 @@ var sCurrentPage = '';
 
 async function codex_init()
 {
-	__CODEX_DATA_ = await codex_API('ressource');
+	// __CODEX_CONFIG_ = await codex_API('config');
+	__CODEX_DATA_ 	= await codex_API('ressource');
 
-	console.log(__CODEX_DATA_);
+	if (__CODEX_DATA_['font'] !== 'undefined') {
+		codex_IncludeFont(__CODEX_DATA_['font']);
+	}
+
+	// console.log(__CODEX_CONFIG_);
+	console.dir(__CODEX_DATA_);
 
 	codex_parseCodex('home', 'content');
+}
+
+function codex_IncludeFont(tbFont)
+{
+	let sFontStyle = '';
+
+	sFontStyle += '<style>';
+	tbFont.forEach((f) => {
+		sFontStyle += f['file'];
+	});
+	sFontStyle += '</style>';
+
+	sCurrentPage += sFontStyle;
 }
 
 function codex_parseCodex(sPageName, sContainerId)
@@ -26,7 +46,7 @@ function codex_parseCodex(sPageName, sContainerId)
 	req.open('GET', './page/'+sPageName+'.html');
 	req.onload = function()
 	{
-		sCurrentPage = req.response;
+		sCurrentPage += req.response;
 
 		while((nStart = sCurrentPage.search(_CDX_LEFT_ESCAPED_)) != -1)
 		{
@@ -34,9 +54,8 @@ function codex_parseCodex(sPageName, sContainerId)
 			codex_parseCdx(sCdx);
 		}
 
-		// console.log(sCurrentPage);
-
 		document.getElementById(sContainerId).innerHTML = sCurrentPage;
+		sCurrentPage = '';
 	}
 	req.send();
 }
@@ -65,10 +84,13 @@ function codex_parseRessource(sCdx) {
 	let sAttribute = tbCdx[1];
 	let nRess = null;
 
+	//cherche pour un index
 	if (sRessource.search('-') != -1) {
 		let tbRessource = sRessource.split('-');
 		sRessource = tbRessource[0];
 		nRess = tbRessource[1];
+	} else {
+		nRess = 0;
 	}
 
 	sCurrentPage = sCurrentPage.replace(_CDX_LEFT_+sCdx+_CDX_RIGHT_, __CODEX_DATA_[sRessource][nRess][sAttribute]);
@@ -80,20 +102,22 @@ function codex_parseLoop(sCdx, sRessource)
 
 	sComponent = string_searchContain(sCurrentPage, _CDX_LEFT_ESCAPED_+sCdx+_CDX_RIGHT_, _CDX_END_LOOP_ESCAPED_);
 
-	__CODEX_DATA_[sRessource].forEach((r, i) => {
-		let sSubCdx = '';
-		let sSaveComponent = sComponent;
-		let sResultComponent = sComponent;
-		let tbSubCdx = [];
-		while ((sSubCdx = string_searchContain(sSaveComponent, _CDX_LEFT_ESCAPED_, _CDX_RIGHT_))) {
-			let tbSubCdx = sSubCdx.split('.');
-			tbSubCdx[0] = tbSubCdx[0]+'-'+i;
-			sResultComponent = sResultComponent.replace(sSubCdx, tbSubCdx.join('.'));
-			sSaveComponent = sSaveComponent.replace(_CDX_LEFT_+sSubCdx+_CDX_RIGHT_, '');
-		}
-		ret += sResultComponent;
-	});
+	if (__CODEX_DATA_[sRessource] != undefined) {
+		__CODEX_DATA_[sRessource].forEach((r, i) => {
+			let sSubCdx = '';
+			let sSaveComponent = sComponent;
+			let sResultComponent = sComponent;
+			let tbSubCdx = [];
+			while ((sSubCdx = string_searchContain(sSaveComponent, _CDX_LEFT_ESCAPED_, _CDX_RIGHT_))) {
+				let tbSubCdx = sSubCdx.split('.');
+				tbSubCdx[0] = tbSubCdx[0]+'-'+i;
+				sResultComponent = sResultComponent.replace(sSubCdx, tbSubCdx.join('.'));
+				sSaveComponent = sSaveComponent.replace(_CDX_LEFT_+sSubCdx+_CDX_RIGHT_, '');
+			}
+			ret += sResultComponent;
+		});
 
+	}
 	let sComponentReplace = _CDX_LEFT_+sCdx+_CDX_RIGHT_+sComponent+_CDX_END_LOOP_;
 
 	sCurrentPage = sCurrentPage.replace(sComponentReplace, ret);
@@ -132,4 +156,9 @@ function codex_API(sRoute)
 
 		req.send()
 	});
+}
+
+function codex_loadPage(sPageName) {
+	codex_parseCodex(sPageName, 'content');
+	window.history.replaceState(null, '', sPageName);
 }

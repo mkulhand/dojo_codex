@@ -1,20 +1,67 @@
-<h1>IT'S BRITNEY BITCH</h1>
 
-<div id="disc-menu">
-	[cdx loop.discipline cdx]
-		<h3>[cdx discipline.nom cdx]</h3>
-		[cdx discipline.prez cdx]
-	[cdx endloop cdx]
+<div id="top-menu">
+	<img class="logo" src="[cdx Accueil.logo cdx]">
+</div>
+<div id="center-menu">
+	<div id="categ">
+		[cdx loop.Categorie cdx]
+			<div>
+				[cdx Categorie.nom cdx]
+			</div>
+		[cdx endloop cdx]
+	</div>
+</div>
+<div id="bottom-menu">
+	<div id="address">
+		[cdx Accueil.adresse cdx]
+	</div>
+	<div id="accroche">
+		[cdx Accueil.accroche cdx]
+	</div>
+	<div id="plan">
+		<button onclick="codex_loadPage('plan')">Voir le plan</button>
+	</div>
 </div>
 
 <style>
-	#disc-menu {
-		display: flex;
-		flex-direction: row;
-	}
-	#disc-menu > h3 {
-		background-color: blue;
-		color: white;
-		margin: 0 15px;
-	}
+
+/* TOP */
+#top-menu {
+	display: flex;
+	flex-direction: row;
+	height: 10%;
+	background-color: whitesmoke;
+}
+#top-menu > .logo {
+	height: 80%;
+	margin: auto 15px;
+}
+
+/*.CENTER */
+#categ {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+}
+#categ > div {
+	font-size: 27px;
+	text-transform: uppercase;
+	margin: 5px 2%;
+	cursor: pointer;
+}
+
+/*.BOTTOM */
+#bottom-menu {
+	display: flex;
+	flex-direction: row;
+}
+#bottom-menu > div {
+	padding: 1%;
+}
+#address, #plan {
+	width: 30%;
+}
+#accroche {
+	width: 40%;
+}
 </style>
