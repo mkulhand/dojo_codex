@@ -1,12 +1,14 @@
 
-<div id="top-menu">
-	<img class="logo" src="[cdx Accueil.logo cdx]">
-</div>
 <div id="center-menu">
 	<div id="categ">
 		[cdx loop.Categorie cdx]
 			<div>
-				[cdx Categorie.nom cdx]
+				<h3>[cdx Categorie.nom cdx]</h3>
+				<div class="discipline">
+					[cdx loop.this.discipline cdx]
+						[cdx discipline.nom cdx]
+					[cdx endloop cdx]
+				</div>
 			</div>
 		[cdx endloop cdx]
 	</div>
