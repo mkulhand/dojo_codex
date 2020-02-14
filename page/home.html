@@ -1,16 +1,14 @@
 
 <div id="center-menu">
 	<div id="categ">
-		[cdx loop.Categorie cdx]
+		[cdxloop Categorie cdxloop]
 			<div>
-				<h3>[cdx Categorie.nom cdx]</h3>
+				<h3>[cdx this.nom cdx]</h3>
 				<div class="discipline">
-					[cdx loop.this.discipline cdx]
-						[cdx discipline.nom cdx]
-					[cdx endloop cdx]
+					<!-- loop on "this.discipline" -->
 				</div>
 			</div>
-		[cdx endloop cdx]
+		[endloop]
 	</div>
 </div>
 <div id="bottom-menu">
@@ -26,18 +24,6 @@
 </div>
 
 <style>
-
-/* TOP */
-#top-menu {
-	display: flex;
-	flex-direction: row;
-	height: 10%;
-	background-color: whitesmoke;
-}
-#top-menu > .logo {
-	height: 80%;
-	margin: auto 15px;
-}
 
 /*.CENTER */
 #categ {
