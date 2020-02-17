@@ -1,5 +1,5 @@
-var __VORTEX_ADDR_ = 'http://127.0.0.1:3000/vortex/';
-// var __VORTEX_ADDR_ = 'http://127.0.0.1/vortex/';
+// var __VORTEX_ADDR_ = 'http://127.0.0.1:3000/vortex/';
+var __VORTEX_ADDR_ = 'http://127.0.0.1/vortex/';
 var __CLIENT_NAME_ = 'dojo';
 var __CODEX_DATA_ = {};
 // var __CODEX_CONFIG_ = {};
