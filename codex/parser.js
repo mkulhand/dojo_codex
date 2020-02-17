@@ -16,20 +16,157 @@ const _CDX_END_LOOP_ = '[endloop]';
 
 function parser_parse(sPage)
 {
-	tbLoop = parser_getLoop(sPage);
-	let nLengthDiff = 0;
+	let tbLoop = parser_getLoops(sPage);
 
 	tbLoop.forEach((oLoop, i) => {
-		// oLoop.start -= nLengthDiff;
-		// oLoop.end -= nLengthDiff;
-		let sPageParsed = parser_parseLoop(sPage, oLoop);
-		// nLengthDiff += sPage.length - sPageParsed.length;
-
-		sPage = sPageParsed;
+		let sLoopContent = parser_parseLoop(oLoop);
+		sPage = sPage.replace(sPage.slice(oLoop.start, oLoop.end), sLoopContent);
 	});
 
 	return parser_parseCdx(sPage);
 }
+
+/*=======================================
+=            CDX LOOP PARSER            =
+=======================================*/
+
+function parser_getLoops(sPage)
+{
+	let tbLoop = [];
+	let nLastLoop = 0;
+
+	tbLoop = string_forEachOccurence(sPage, _CDX_LEFT_LOOP_, function(nStart)
+	{
+		if (nLastLoop > nStart) { return }
+
+		let oLoop = parser_getLoop(sPage, nStart, parser_getLoopContext(sPage, nStart));
+
+		nLastLoop = oLoop.end;
+
+		return oLoop;
+	});
+
+	return tbLoop;
+}
+
+function parser_getLoop(sPage, nStart, sContext, i)
+{
+	let oLoop = {};
+	oLoop.context = sContext;
+	oLoop.children = [];
+
+	let nEndLoop = sPage.indexOf(_CDX_END_LOOP_, nStart);
+	let nNextLoop = sPage.indexOf(_CDX_LEFT_LOOP_, nStart + _CDX_LEFT_LOOP_ESCAPED_.length);
+
+	if (nNextLoop != -1 && nEndLoop > nNextLoop) {
+		oLoop.children.push(parser_getLoop(sPage, nNextLoop, parser_getLoopContext(sPage, nNextLoop)));
+		nEndLoop = sPage.indexOf(_CDX_END_LOOP_, nEndLoop+_CDX_END_LOOP_ESCAPED_.length);
+	}
+
+	oLoop.start = nStart;
+	oLoop.end = nEndLoop;
+	oLoop.content = sPage.slice(nStart, nEndLoop + _CDX_END_LOOP_ESCAPED_.length);
+
+	return oLoop;
+}
+
+function parser_getLoopContext(sPage, nStart) {
+	return string_searchContain(sPage.substr(nStart), _CDX_LEFT_LOOP_ESCAPED_, _CDX_RIGHT_LOOP_).trim();
+}
+
+function parser_parseLoop(oLoop)
+{
+	let sContext = oLoop.context;
+	let sRes = '';
+	let sSaveContent = '';
+
+	tbRess = parser_parseContext(oLoop.context);
+
+	if (Array.isArray(tbRess)) {
+		tbRess.forEach(function(r)
+		{
+			sSaveContent = oLoop.content;
+			let sLocalContext = oLoop.context+'-'+r.id;
+
+			if (oLoop.children.length > 0)
+			{
+				let sParsedContent = '';
+				oLoop.children.forEach(function(l)
+				{
+					let oSubLoop = {};
+					let sSubRes = '';
+					Object.assign(oSubLoop, l);
+					oSubLoop.context = l.context.replace('this', sLocalContext);
+					sSubRes += parser_parseLoop(oSubLoop);
+					sParsedContent = oLoop.content.replace(oLoop.content.slice(l.start - oLoop.start, l.end - oLoop.end), sSubRes);
+				});
+				sParsedContent = parser_thisReplacer(sParsedContent, sContext+'-'+r.id);
+				sRes += sParsedContent;
+			}
+			else
+			{
+				sLoopContent = parser_thisReplacer(oLoop.content, sContext+'-'+r.id);
+				sRes += sLoopContent;
+			}
+		});
+	}
+
+	if (sRes != '') {
+		return sRes;
+	}
+}
+
+function parser_thisReplacer(sLoopContent, sContext) {
+		sLoopContent = replaceAll(sLoopContent, 'this', sContext);
+		return string_searchContain(sLoopContent, _CDX_RIGHT_LOOP_, _CDX_END_LOOP_ESCAPED_).substr(1).trim();
+}
+
+function parser_parseContext(sContext)
+{
+	let tbContext = sContext.split('.');
+	let aRes = [];
+
+	if (tbContext.length == 1)
+	{
+		aRes = __CODEX_DATA_[sContext];
+	}
+	else
+	{
+		if (tbContext.length == 2) {
+			let tbRess = tbContext[0].split('-');
+
+			let tbRessource = parser_getRessource(tbRess[0], tbRess[1]);
+			if (tbRessource !=  undefined && tbRessource[tbContext[1]].length > 0) {
+				tbRessource = JSON.parse(tbRessource[tbContext[1]]);
+				tbRessource.forEach(function(r) {
+					r = JSON.parse(r);
+					aRes.push(parser_getRessource(r.type, r.id));
+				});
+			}
+		}
+	}
+
+	return aRes;
+}
+
+function parser_getRessource(sRessName, nId) {
+	let res;
+
+	__CODEX_DATA_[sRessName].forEach(function(r) {
+		if (r.id == Number(nId)) {
+			res = r;
+		}
+	});
+
+	return res;
+}
+
+function replaceAll(str, find, replace) {
+	return str.replace(new RegExp(find, 'g'), replace);
+}
+
+/*=====  End of CDX LOOP PARSER  ======*/
+
 
 /*==================================
 =            CDX PARSER            =
@@ -37,21 +174,19 @@ function parser_parse(sPage)
 
 function parser_parseCdx(sPage)
 {
-	let nStart = 0;
-	let nSaveEnd = 0;
+	string_forEachOccurence(sPage, _CDX_LEFT_, function(nStart) {
+		let sContext = string_searchContain(sPage.substr(nStart), _CDX_LEFT_ESCAPED_, _CDX_RIGHT_);
+		let test = parser_getData(sContext);
+		console.log(test);
+	});
+}
 
-	while ((nStart = string_searchAfterIndex(sPage, _CDX_LEFT_ESCAPED_, nStart)) != -1)
-	{
-		if (nStart < nSaveEnd) { break; }
+function parser_getData(sContext) {
+	console.log(sContext);
+	tbContext = sContext.split('.');
 
-		let sCdx = string_searchContain(sPage.substr(nStart), _CDX_LEFT_ESCAPED_, _CDX_RIGHT_);
-
-		sPage = sPage.replace(_CDX_LEFT_+sCdx+_CDX_RIGHT_, parser_parseRessource(sCdx));
-
-		nSaveEnd = nStart;
-	}
-
-	return sPage;
+	// tbContext = tbContext.slice(-2);
+	// console.log(tbContext);
 }
 
 function parser_parseRessource(sCdx)
@@ -79,74 +214,3 @@ function parser_parseRessource(sCdx)
 }
 
 /*=====  End of CDX PARSER  ======*/
-
-
-/*=======================================
-=            CDX LOOP PARSER            =
-=======================================*/
-
-function parser_getLoop(sPage)
-{
-	let tbLoop = [];
-	let nStart = 0;
-	let nSaveEnd = 0;
-
-	while ((nStart = string_searchAfterIndex(sPage, _CDX_LEFT_LOOP_ESCAPED_, nStart)) != -1)
-	{
-		if (nStart < nSaveEnd) { break; }
-
-		let oLoop = {};
-
-		oLoop.start = nStart;
-		oLoop.ressource = string_searchContain(sPage.substr(nStart), _CDX_LEFT_LOOP_ESCAPED_, _CDX_RIGHT_LOOP_).trim();
-		oLoop.content = string_searchContain(sPage.substr(nStart), _CDX_LEFT_LOOP_ESCAPED_+' '+oLoop.ressource+' '+_CDX_RIGHT_LOOP_, _CDX_END_LOOP_ESCAPED_).trim();
-
-		oLoop.end = string_searchAfterIndex(sPage, _CDX_END_LOOP_ESCAPED_, nStart) + _CDX_END_LOOP_ESCAPED_.length;
-
-		nStart = oLoop.end;
-		nSaveEnd = oLoop.end;
-
-		tbLoop.push(oLoop);
-	}
-
-	return tbLoop;
-}
-
-function parser_parseLoop(sPage, oLoop) {
-	let nStart = 0;
-	let nSaveEnd = 0;
-	let sReplace = '';
-	let sLoopContent = oLoop.content;
-
-	__CODEX_DATA_[oLoop.ressource].forEach((r, i) => {
-		nStart = 0;
-		nSaveEnd = 0;
-		while ((nStart = string_searchAfterIndex(oLoop.content, _CDX_LEFT_ESCAPED_, nStart)) != -1) {
-			if (nStart < nSaveEnd) { break; }
-
-			let sCdx = string_searchContain(oLoop.content.substr(nStart), _CDX_LEFT_ESCAPED_, _CDX_RIGHT_);
-
-			tbCdx = sCdx.split('.');
-
-			if (tbCdx.length > 1) {
-				tbCdx[0] = tbCdx[0].trim();
-				tbCdx[1] = tbCdx[1].trim();
-				if (tbCdx[0] == 'this') {
-					let sCdxParsed = _CDX_LEFT_+' '+oLoop.ressource+'-'+r.id+'.'+tbCdx[1]+' '+_CDX_RIGHT_+'\n';
-					sLoopContent = oLoop.content.replace(_CDX_LEFT_+sCdx+_CDX_RIGHT_, sCdxParsed);
-				}
-			}
-
-			nStart += sLoopContent.length;
-			nSaveEnd = nStart;
-		}
-
-		sReplace += sLoopContent;
-	});
-
-	sPage = sPage.replace(sPage.substr(oLoop.start, oLoop.end), sReplace);
-
-	return sPage;
-}
-
-/*=====  End of CDX LOOP PARSER  ======*/

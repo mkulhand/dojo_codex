@@ -5,12 +5,15 @@
 			<div>
 				<h3>[cdx this.nom cdx]</h3>
 				<div class="discipline">
-					<!-- loop on "this.discipline" -->
+					[cdxloop this.discipline cdxloop]
+						<h4>[cdx this.nom cdx]</h4>
+					[endloop]
 				</div>
 			</div>
 		[endloop]
 	</div>
 </div>
+
 <div id="bottom-menu">
 	<div id="address">
 		[cdx Accueil.adresse cdx]
