@@ -12,8 +12,8 @@ async function codex_init()
 	// console.log(__CODEX_CONFIG_);
 	console.dir(__CODEX_DATA_);
 
-	codex_parseCodex('style', 'css');
-	codex_parseCodex('menu', 'top-menu');
+	// codex_parseCodex('style', 'css');
+	// codex_parseCodex('menu', 'top-menu');
 	codex_parseCodex('home', 'content');
 }
 
@@ -26,6 +26,10 @@ function codex_parseCodex(sPageName, sContainerId)
 		document.getElementById(sContainerId).innerHTML = parser_parse(req.response);
 	}
 	req.send();
+}
+
+function codex_generateId() {
+	return '_' + Math.random().toString(36).substr(2, 9);
 }
 
 function codex_API(sRoute)
