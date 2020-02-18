@@ -6,3 +6,7 @@
 body {
 	color: var(--prim-color);
 }
+
+#content {
+	height: 94%;
+}
