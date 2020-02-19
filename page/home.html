@@ -13,7 +13,7 @@
 				<h3>[cdx this.nom cdx]</h3>
 				<div class="discipline">
 					[cdxloop this.discipline cdxloop]
-						<h5 onmouseover="showBanner('[cdx this.nom cdx]');" onmouseleave="showBanner('default');">[cdx this.nom cdx]</h5>
+						<h5 onmouseover="showBanner('[cdx this.nom cdx]');" onmouseleave="showBanner('default');" onclick="router_go('[cdx this.nom cdx]')">[cdx this.nom cdx]</h5>
 					[endloop]
 				</div>
 			</div>
@@ -22,14 +22,15 @@
 </div>
 
 <div id="bottom-menu">
-	<div id="address">
-		[cdx Accueil.adresse cdx]
+	<div id="contact">
+		<div class="address">[cdx Contact.adresse cdx]</div>
+		<div class="tel">[cdx Contact.tel cdx]</div>
 	</div>
 	<div id="accroche">
 		[cdx Accueil.accroche cdx]
 	</div>
 	<div id="plan">
-		<button onclick="codex_loadPage('plan')">Voir le plan</button>
+		<button onclick="router_go('plan')">Voir le plan</button>
 	</div>
 </div>
 
@@ -64,7 +65,7 @@
 	font-size: 27px;
 	text-transform: uppercase;
 	padding: 10px 15px;
-	padding-bottom: 3px;
+	padding-bottom: 0px;
 	cursor: pointer;
 }
 
@@ -111,7 +112,7 @@
 #bottom-menu > div {
 	padding: 1%;
 }
-#address, #plan {
+#contact, #plan {
 	width: 30%;
 }
 #accroche {

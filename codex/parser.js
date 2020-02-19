@@ -145,8 +145,8 @@ function parser_parseLoop(oLoop)
 }
 
 function parser_thisReplacer(sLoopContent, sContext) {
-		sLoopContent = replaceAll(sLoopContent, 'this', sContext);
-		return string_searchContain(sLoopContent, _CDX_RIGHT_LOOP_, _CDX_END_LOOP_ESCAPED_).substr(1).trim();
+	sLoopContent = replaceAll(sLoopContent, 'this', sContext);
+	return string_searchContain(sLoopContent, _CDX_RIGHT_LOOP_, _CDX_END_LOOP_ESCAPED_).substr(1).trim();
 }
 
 function parser_parseContext(oLoop)
@@ -161,11 +161,13 @@ function parser_parseContext(oLoop)
 	}
 	else
 	{
-		if (tbContext.length == 2) {
+		if (tbContext.length == 2)
+		{
 			let tbRess = tbContext[0].split('-');
-
 			let tbRessource = parser_getRessource(tbRess[0], tbRess[1]);
-			if (tbRessource !=  undefined && tbRessource[tbContext[1]].length > 0) {
+
+			if (tbRessource !=  undefined && tbRessource[tbContext[1]].length > 0)
+			{
 				tbRessource = JSON.parse(tbRessource[tbContext[1]]);
 				tbRessource.forEach(function(r) {
 					r = JSON.parse(r);
@@ -180,7 +182,12 @@ function parser_parseContext(oLoop)
 }
 
 function parser_getRessource(sRessName, nId) {
-	let res = '';
+	let res;
+
+	if (nId == undefined && sRessName == __CODEX_CURRENT_RESSOURCE_NAME_) {
+		nId = __CODEX_CURRENT_RESSOURCE_ID_;
+	}
+
 	sRessName = sRessName.trim();
 
 	if (__CODEX_DATA_[sRessName] !== undefined) {
@@ -235,6 +242,10 @@ function parser_getData(sContext) {
 
 	if (tbRessource.length <= 1) {
 		tbRessource[1] = 1;
+	}
+
+	if (tbRessource[0].trim() == __CODEX_CURRENT_RESSOURCE_NAME_) {
+		tbRessource[1] = __CODEX_CURRENT_RESSOURCE_ID_;
 	}
 
 	let ret = parser_getRessource(tbRessource[0], tbRessource[1]);

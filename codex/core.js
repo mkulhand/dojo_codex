@@ -4,11 +4,11 @@ var __VORTEX_ADDR_ = 'http://127.0.0.1:3000/vortex/';
 var __CODEX_ADDR_ = 'http://127.0.0.1:3000/dojo_codex/';
 var __CLIENT_NAME_ = 'dojo';
 var __CODEX_DATA_ = {};
-var __CODEX_ROUTE_ = ['home', 'plan', 'discipline'];
+var __CODEX_CURRENT_RESSOURCE_NAME_ = '';
+var __CODEX_CURRENT_RESSOURCE_ID_ = 1;
 
 async function codex_init()
 {
-
 	if (!await codex_getData()) {
 		__CODEX_DATA_ 	= await codex_API('ressource');
 		codex_saveData();
@@ -19,19 +19,7 @@ async function codex_init()
 	codex_parseCodex('style', 'css');
 	codex_parseCodex('menu', 'top-menu');
 
-	sPageQuery = (window.location.href).split(__CODEX_ADDR_);
-
-	if (sPageQuery[1] == '') {
-		sPageQuery = 'home';
-	} else {
-		sPageQuery = sPageQuery[1];
-	}
-
-	if (!__CODEX_ROUTE_.includes(sPageQuery)) {
-		sPageQuery = '404';
-	}
-
-	codex_parseCodex(sPageQuery, 'content');
+	router_execUrl();
 }
 
 function codex_getData() {
@@ -54,11 +42,10 @@ function codex_getData() {
 function codex_saveData() {
 	let req = new XMLHttpRequest();
 	req.open('POST', __CODEX_ADDR_+'/codex/write_data.php', true);
-	console.log(__CODEX_DATA_['Discipline'][1]['photo']);
 
 	let fd = new FormData();
-
 	fd.append('data', JSON.stringify(__CODEX_DATA_));
+
 	req.onload = function()
 	{
 		// console.log(req.response);
@@ -110,10 +97,4 @@ function codex_API(sRoute)
 
 		req.send()
 	});
-}
-
-function codex_loadPage(sPageName, sGet) {
-	window.location = __CODEX_ADDR_+sPageName;
-	// codex_parseCodex(sPageName, 'content');
-	// window.history.replaceState(null, '', sPageName);
 }

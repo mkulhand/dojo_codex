@@ -1,4 +1,8 @@
-<img class="logo" src="[cdx Accueil.logo cdx]">
+<img onclick="router_go('home');" class="logo" src="[cdx Accueil.logo cdx]">
+<div class="menuLink">
+	<div><h3 onclick="router_go('contact');">Contact</h3></div>
+	<div><h3 onclick="router_go('horaire');">Horaires/Tarif</h3></div>
+</div>
 
 <style>
 #top-menu {
@@ -10,5 +14,28 @@
 #top-menu > .logo {
 	height: 80%;
 	margin: auto 15px;
+	cursor: pointer;
+}
+
+#top-menu > .menuLink {
+	display: flex;
+	flex-direction: row-reverse;
+	margin-left: auto;
+}
+
+#top-menu > .menuLink > div {
+	height: 100%;
+	float: right;
+	cursor: pointer;
+	display: flex;
+	padding: 0 10px;
+}
+
+#top-menu > .menuLink > div > h3{
+	margin: auto;
+}
+
+#top-menu > .menuLink > div:hover {
+	background-color: rgb(216, 216, 216);
 }
 </style>
