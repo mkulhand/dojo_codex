@@ -1,0 +1,82 @@
+
+<div id="discName">
+	<h1>
+		[cdx Discipline.nom cdx]
+	</h1>
+</div>
+
+<div id="discipline">
+	<div id="discPrez">
+		<img src="[cdx Discipline.photo cdx]">
+		<div id="discDesc">
+			[cdx Discipline.description cdx]
+		</div>
+	</div>
+
+	<div id="discSide">
+		<!-- VIDEO -->
+		<h2>Vidéos</h2>
+		<!-- HORAIRE -->
+		<h2>Horaires</h2>
+		<!-- PROF -->
+		<h2>Professeurs</h2>
+		<div class="prof">
+			[cdxloop Discipline.prof cdxloop]
+				<img src="[cdx this.photo cdx]">
+				<h3>[cdx this.nom cdx]</h3>
+				<h3>[cdx this.prenom cdx]</h3>
+				[cdx this.description cdx]
+			[endloop]
+		</div>
+	</div>
+</div>
+
+<style>
+
+#discipline {
+	display: flex;
+	flex-direction: row;
+	margin-top: 1%;
+}
+
+#discName > * {
+	background-color: #0031757a;
+	color: white;
+	padding: 10px;
+	padding-left: 50px;
+}
+
+/* PREZ */
+#discPrez {
+	width: 69%;
+	margin: 0 auto;
+}
+
+#discPrez > img {
+	width: 100%;
+}
+
+/* SIDE */
+#discSide {
+	width: 30%;
+	background-color: #f8bd61;
+}
+
+#discSide > h2 {
+	border: solid 2px;
+	width: fit-content;
+	padding: 4px;
+	margin: 0 auto;
+	margin-top: 20px;
+}
+
+#discSide > .prof {
+	text-align: center;
+}
+
+#discSide > .prof > img {
+	width: 80%;
+	margin: 2%;
+}
+
+</style>

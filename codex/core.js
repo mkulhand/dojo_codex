@@ -1,20 +1,62 @@
-// var __VORTEX_ADDR_ = 'http://127.0.0.1:3000/vortex/';
-var __VORTEX_ADDR_ = 'http://127.0.0.1/vortex/';
+var __VORTEX_ADDR_ = 'http://127.0.0.1:3000/vortex/';
+// var __VORTEX_ADDR_ = 'http://mathias-kulhandjian.fr/vortex/';
+// var __VORTEX_ADDR_ = 'http://127.0.0.1/vortex/';
+
+var __CODEX_ADDR_ = 'http://127.0.0.1:3000/dojo_codex/';
+// var __CODEX_ADDR_ = 'http://mathias-kulhandjian.fr/dojo_codex/';
 var __CLIENT_NAME_ = 'dojo';
 var __CODEX_DATA_ = {};
-// var __CODEX_CONFIG_ = {};
+var __CODEX_CURRENT_RESSOURCE_NAME_ = '';
+var __CODEX_CURRENT_RESSOURCE_ID_ = 1;
 
 async function codex_init()
 {
-	// __CODEX_CONFIG_ = await codex_API('config');
-	__CODEX_DATA_ 	= await codex_API('ressource');
+		let tbData 	= await codex_API('ressource');
 
-	// console.log(__CODEX_CONFIG_);
+		if (tbData !== undefined) {
+			__CODEX_DATA_ = tbData;
+			codex_saveData();
+		} else {
+			// await codex_getLocalData();
+		}
+
 	console.dir(__CODEX_DATA_);
 
-	// codex_parseCodex('style', 'css');
-	// codex_parseCodex('menu', 'top-menu');
-	codex_parseCodex('home', 'content');
+	codex_parseCodex('style', 'css');
+	codex_parseCodex('menu', 'top-menu');
+
+	router_execUrl();
+}
+
+function codex_getLocalData() {
+	return new Promise(function(resolve, reject) {
+		let req = new XMLHttpRequest();
+		req.open('GET', './codex/data/data.json');
+		req.onload = function()
+		{
+			if (req.response.length > 5) {
+				__CODEX_DATA_ = JSON.parse(req.response);
+				resolve(true);
+			} else {
+				resolve(false);
+			}
+		}
+		req.send();
+	});
+}
+
+function codex_saveData() {
+	let req = new XMLHttpRequest();
+	req.open('POST', __CODEX_ADDR_+'/codex/write_data.php', true);
+
+	let fd = new FormData();
+	fd.append('data', JSON.stringify(__CODEX_DATA_));
+
+	req.onload = function()
+	{
+		console.log(req.response);
+	}
+	req.send(fd);
 }
 
 function codex_parseCodex(sPageName, sContainerId)
@@ -26,10 +68,6 @@ function codex_parseCodex(sPageName, sContainerId)
 		document.getElementById(sContainerId).innerHTML = parser_parse(req.response);
 	}
 	req.send();
-}
-
-function codex_generateId() {
-	return '_' + Math.random().toString(36).substr(2, 9);
 }
 
 function codex_API(sRoute)
@@ -67,7 +105,26 @@ function codex_API(sRoute)
 	});
 }
 
-function codex_loadPage(sPageName) {
-	codex_parseCodex(sPageName, 'content');
-	window.history.replaceState(null, '', sPageName);
+function codex_fetchLocalRessource(sRessName)
+{
+	return new Promise(function(resolve, reject) {
+		let req = new XMLHttpRequest();
+		req.open('GET', './codex/data/'+sRessName+'.json');
+		req.onload = function()
+		{
+			if (req.response.length > 5) {
+				try {
+					__CODEX_DATA_[sRessName] = JSON.parse(req.response);
+					resolve(true);
+				}
+				catch {
+					console.trace();
+					resolve(false);
+				}
+			} else {
+				resolve(false);
+			}
+		}
+		req.send();
+	});
 }

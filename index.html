@@ -1,5 +1,6 @@
 <html>
 	<head>
+		<script src="./codex/router.js"></script>
 		<script src="./codex/string.js"></script>
 		<script src="./codex/parser.js"></script>
 		<script src="./codex/core.js"></script>
@@ -19,4 +20,17 @@
 
 <script>
 codex_init();
+</script>
+
+<script>
+function showBanner(sDiscName) {
+	let tbBanners = document.getElementsByClassName('bannerImg');
+
+	for (let b of tbBanners) {
+		b.style.display = 'none';
+	}
+
+	let eBanner = document.getElementsByClassName(sDiscName+'-banner');
+	eBanner[0].style.display = 'block';
+}
 </script>

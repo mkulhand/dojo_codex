@@ -1,14 +1,41 @@
-<img class="logo" src="[cdx Accueil.logo cdx]">
+<img onclick="router_go('home');" class="logo" src="[cdx Accueil.logo cdx]">
+<div class="menuLink">
+	<div onclick="router_go('contact');"><h3>Contact</h3></div>
+	<div onclick="router_go('horaire');"><h3>Horaires/Tarif</h3></div>
+</div>
 
 <style>
 #top-menu {
 	display: flex;
 	flex-direction: row;
-	height: 10%;
+	height: 6%;
 	background-color: whitesmoke;
 }
 #top-menu > .logo {
 	height: 80%;
 	margin: auto 15px;
+	cursor: pointer;
+}
+
+#top-menu > .menuLink {
+	display: flex;
+	flex-direction: row-reverse;
+	margin-left: auto;
+}
+
+#top-menu > .menuLink > div {
+	height: 100%;
+	float: right;
+	cursor: pointer;
+	display: flex;
+	padding: 0 10px;
+}
+
+#top-menu > .menuLink > div > h3{
+	margin: auto;
+}
+
+#top-menu > .menuLink > div:hover {
+	background-color: rgb(216, 216, 216);
 }
 </style>

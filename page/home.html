@@ -1,12 +1,19 @@
 
+<div id="banner">
+	<img class="default-banner bannerImg" src="[cdx Accueil.banniere cdx]">
+	[cdxloop Discipline cdxloop]
+		<img class="[cdx this.nom cdx]-banner bannerImg" src="[cdx this.photo cdx]">
+	[endloop]
+</div>
+
 <div id="center-menu">
 	<div id="categ">
 		[cdxloop Categorie cdxloop]
-			<div>
+			<div class='categ-item'>
 				<h3>[cdx this.nom cdx]</h3>
 				<div class="discipline">
 					[cdxloop this.discipline cdxloop]
-						<h4>[cdx this.nom cdx]</h4>
+						<h5 onmouseover="showBanner('[cdx this.nom cdx]');" onmouseleave="showBanner('default');" onclick="router_go('[cdx this.nom cdx]')">[cdx this.nom cdx]</h5>
 					[endloop]
 				</div>
 			</div>
@@ -15,41 +22,98 @@
 </div>
 
 <div id="bottom-menu">
-	<div id="address">
-		[cdx Accueil.adresse cdx]
+	<div id="contact">
+		<div class="address">[cdx Contact.adresse cdx]</div>
+		<div class="tel">[cdx Contact.tel cdx]</div>
 	</div>
 	<div id="accroche">
 		[cdx Accueil.accroche cdx]
 	</div>
 	<div id="plan">
-		<button onclick="codex_loadPage('plan')">Voir le plan</button>
+		<button onclick="router_go('plan')">Voir le plan</button>
 	</div>
 </div>
 
 <style>
 
+/* BANNER */
+
+#banner {
+	width: 100%;
+	height: 60%;
+}
+
+#banner > img {
+	width: 100%;
+	height: 100%;
+}
+
+#banner > img:not(.default-banner) {
+	display: none;
+}
+
 /*.CENTER */
+#center-menu {
+	height: 5%;
+}
+
 #categ {
 	display: flex;
 	flex-direction: row;
 	justify-content: center;
 }
-#categ > div {
+.categ-item {
 	font-size: 27px;
 	text-transform: uppercase;
-	margin: 5px 2%;
+	padding: 10px 15px;
+	padding-bottom: 0px;
 	cursor: pointer;
+}
+
+.categ-item:hover .discipline {
+	height: auto;
+	opacity: 1;
+	z-index: 10;
+}
+
+.categ-item:hover .discipline > h5 {
+	display: block !important;
+	padding: 5px 14px;
+}
+
+.discipline {
+	position: absolute;
+	left: 0;
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	background-color: #0031757a;
+	color: white;
+	height: 0;
+	opacity: 0;
+	z-index: 0;
+	transition-duration: 0.2s;
+}
+
+.discipline > h5 {
+	display: none;
+}
+
+.discipline > h5:hover {
+	background-color: var(--prim-color);
 }
 
 /*.BOTTOM */
 #bottom-menu {
 	display: flex;
 	flex-direction: row;
+	margin-top: 2%;
 }
 #bottom-menu > div {
 	padding: 1%;
 }
-#address, #plan {
+#contact, #plan {
 	width: 30%;
 }
 #accroche {

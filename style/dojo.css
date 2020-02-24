@@ -1,8 +1,13 @@
 
 :root {
 	--prim-color: #043465;
+	--second-color: #cfd8dd;
 }
 
 body {
 	color: var(--prim-color);
+}
+
+#content {
+	height: 94%;
 }

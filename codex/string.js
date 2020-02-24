@@ -9,6 +9,30 @@ function string_searchContain(sHaystack, sLeft, sRight)
 	return sHaystack.substr(0, sHaystack.search(sRight));
 }
 
+function string_forEachOccurenceAsync(sHaystack, sNeedle, fFunc)
+{
+	return new Promise(async function(resolve) {
+		let tbReturn = [];
+		let nStart = 0;
+		let nSaveStart = 0;
+
+		while ((nStart = string_searchAfterIndex(sHaystack, sNeedle, nStart)) != -1) {
+			if (nStart < nSaveStart) { break; }
+
+			let res = await fFunc(nStart);
+
+			if (res != 'undefined' && res != null) {
+				tbReturn.push(res);
+			}
+
+			nStart += sNeedle.length;
+			nSaveStart = nStart;
+		}
+
+		resolve(tbReturn);
+	});
+}
+
 function string_forEachOccurence(sHaystack, sNeedle, fFunc)
 {
 	let tbReturn = [];
@@ -28,5 +52,5 @@ function string_forEachOccurence(sHaystack, sNeedle, fFunc)
 		nSaveStart = nStart;
 	}
 
-	return tbReturn;
+	return (tbReturn);
 }
