@@ -14,7 +14,7 @@ const _CDX_END_LOOP_ESCAPED_ = '\\[endloop]';
 const _CDX_END_LOOP_ = '[endloop]';
 
 
-function parser_parse(sPage)
+async function parser_parse(sPage)
 {
 	let tbLoop = parser_getLoops(sPage);
 	let nDiffLength = 0;
@@ -33,9 +33,11 @@ function parser_parse(sPage)
 
 	});
 
-	sPage = parser_parseCdx(sPage);
+	sPage = await parser_parseCdx(sPage);
 
-	sPage = replaceAll(sPage, _CDX_END_LOOP_ESCAPED_, '');
+	if (sPage !== undefined) {
+		sPage = replaceAll(sPage, _CDX_END_LOOP_ESCAPED_, '');
+	}
 
 	return sPage;
 }
@@ -99,12 +101,13 @@ function parser_getLoopContext(sPage, nStart) {
 	return string_searchContain(sPage.substr(nStart), _CDX_LEFT_LOOP_ESCAPED_, _CDX_RIGHT_LOOP_).trim();
 }
 
-function parser_parseLoop(oLoop)
+async function parser_parseLoop(oLoop)
 {
 	let sRes = '';
 	let sSaveContent = '';
 
-	tbRess = parser_parseContext(oLoop);
+	tbRess = await parser_parseContext(oLoop);
+	console.log(tbRess);
 	let sContext = oLoop.context;
 
 	if (Array.isArray(tbRess) && tbRess.length > 0) {
@@ -116,13 +119,13 @@ function parser_parseLoop(oLoop)
 			if (oLoop.children.length > 0)
 			{
 				let sParsedContent = '';
-				oLoop.children.forEach(function(l)
+				oLoop.children.forEach(async function(l)
 				{
 					let oSubLoop = {};
 					let sSubRes = '';
 					Object.assign(oSubLoop, l);
 					oSubLoop.context = l.context.replace('this', sLocalContext);
-					sSubRes += parser_parseLoop(oSubLoop);
+					sSubRes += await parser_parseLoop(oSubLoop);
 					if (sSubRes == 'undefined') {
 						sSubRes = '';
 					}
@@ -140,7 +143,7 @@ function parser_parseLoop(oLoop)
 	}
 
 	if (sRes != '') {
-		return sRes;
+		return (sRes);
 	}
 }
 
@@ -221,38 +224,36 @@ function replaceAll(str, find, replace) {
 
 function parser_parseCdx(sPage)
 {
-	let nDiffLength = 0;
-	let nSaveEnd = 0;
-	let sPageToParse = sPage;
+	return new Promise(function(resolve) {
+		let nDiffLength = 0;
+		let nSaveEnd = 0;
+		let sPageToParse = sPage;
 
-
-	string_forEachOccurenceAsync(sPage, _CDX_LEFT_, function(nStart)
-	{
-		return new Promise(function(resolve) {
-			nStart += nDiffLength;
-			let sContext = string_searchContain(sPageToParse.substr(nStart), _CDX_LEFT_ESCAPED_, _CDX_RIGHT_);
-			if (sContext.length == 0) { return };
-
-			let sContent = parser_getData(sContext);
-
-			sContent.then(function(sContent) {
-				if (sContent !== undefined) {
-					nDiffLength += sContent.length - (_CDX_LEFT_+sContext+_CDX_RIGHT_).length;
-					sPageToParse = sPageToParse.replace(_CDX_LEFT_+sContext+_CDX_RIGHT_, sContent);
-					resolve(sPageToParse);
+		string_forEachOccurenceAsync(sPage, _CDX_LEFT_, function(nStart, sPageParsed)
+		{
+			return new Promise(function(resolve) {
+				if (sPageParsed !== undefined) {
+					sPageToParse = sPageParsed;
 				}
+				nStart += nDiffLength;
+				let sContext = string_searchContain(sPageToParse.substr(nStart), _CDX_LEFT_ESCAPED_, _CDX_RIGHT_);
+				if (sContext.length == 0) { return };
+
+				let sContent = parser_getData(sContext);
+
+				sContent.then(function(sContent) {
+					if (sContent !== undefined) {
+						nDiffLength += sContent.length - (_CDX_LEFT_+sContext+_CDX_RIGHT_).length;
+						sPageToParse = sPageToParse.replace(_CDX_LEFT_+sContext+_CDX_RIGHT_, sContent);
+						resolve(sPageToParse);
+					}
+				});
 			});
+		}).then(function(ret) {
+			console.log(ret);
+			resolve(ret);
 		});
-	}).then(function(ret) {
-		console.log(ret);
-		sPageToParse = ret;
-		// return ret;
 	});
-
-	// console.log(test);
-	// console.log(sPageToParse);
-
-	return sPageToParse;
 }
 
 async function parser_getData(sContext) {

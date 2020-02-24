@@ -1,9 +1,11 @@
-var __VORTEX_ADDR_ = 'http://127.0.0.1:3000/vortex/';
+// var __VORTEX_ADDR_ = 'http://127.0.0.1:3000/vortex/';
 // var __VORTEX_ADDR_ = 'http://mathias-kulhandjian.fr/vortex/';
-// var __VORTEX_ADDR_ = 'http://127.0.0.1/vortex/';
+var __VORTEX_ADDR_ = 'http://127.0.0.1/vortex/';
 
-var __CODEX_ADDR_ = 'http://127.0.0.1:3000/dojo_codex/';
+// var __CODEX_ADDR_ = 'http://127.0.0.1:3000/dojo_codex/';
 // var __CODEX_ADDR_ = 'http://mathias-kulhandjian.fr/dojo_codex/';
+var __CODEX_ADDR_ = 'http://127.0.0.1/dojo_codex/';
+
 var __CLIENT_NAME_ = 'dojo';
 var __CODEX_DATA_ = {};
 var __CODEX_CURRENT_RESSOURCE_NAME_ = '';
@@ -63,9 +65,9 @@ function codex_parseCodex(sPageName, sContainerId)
 {
 	let req = new XMLHttpRequest();
 	req.open('GET', './page/'+sPageName+'.html');
-	req.onload = function()
+	req.onload = async function()
 	{
-		document.getElementById(sContainerId).innerHTML = parser_parse(req.response);
+		document.getElementById(sContainerId).innerHTML = await parser_parse(req.response);
 	}
 	req.send();
 }

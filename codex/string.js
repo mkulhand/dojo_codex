@@ -15,21 +15,19 @@ function string_forEachOccurenceAsync(sHaystack, sNeedle, fFunc)
 		let tbReturn = [];
 		let nStart = 0;
 		let nSaveStart = 0;
+		let sRet;
 
 		while ((nStart = string_searchAfterIndex(sHaystack, sNeedle, nStart)) != -1) {
 			if (nStart < nSaveStart) { break; }
 
-			let res = await fFunc(nStart);
-
-			if (res != 'undefined' && res != null) {
-				tbReturn.push(res);
-			}
+			let res = await fFunc(nStart, sRet);
+			sRet = res;
 
 			nStart += sNeedle.length;
 			nSaveStart = nStart;
 		}
 
-		resolve(tbReturn);
+		resolve(sRet);
 	});
 }
 
