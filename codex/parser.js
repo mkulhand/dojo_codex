@@ -149,7 +149,7 @@ function parser_thisReplacer(sLoopContent, sContext) {
 	return string_searchContain(sLoopContent, _CDX_RIGHT_LOOP_, _CDX_END_LOOP_ESCAPED_).substr(1).trim();
 }
 
-function parser_parseContext(oLoop)
+async function parser_parseContext(oLoop)
 {
 	let sContext = oLoop.context;
 	let tbContext = sContext.split('.');
@@ -157,6 +157,9 @@ function parser_parseContext(oLoop)
 
 	if (tbContext.length == 1)
 	{
+		if (__CODEX_DATA_[sContext] == undefined) {
+			await codex_fetchLocalRessource(sContext);
+		}
 		aRes = __CODEX_DATA_[sContext];
 	}
 	else
@@ -181,7 +184,7 @@ function parser_parseContext(oLoop)
 	return aRes;
 }
 
-function parser_getRessource(sRessName, nId) {
+async function parser_getRessource(sRessName, nId) {
 	let res;
 
 	if (nId == undefined && sRessName == __CODEX_CURRENT_RESSOURCE_NAME_) {
@@ -189,6 +192,10 @@ function parser_getRessource(sRessName, nId) {
 	}
 
 	sRessName = sRessName.trim();
+
+	if (__CODEX_DATA_[sRessName] == undefined) {
+		await codex_fetchLocalRessource(sRessName);
+	}
 
 	if (__CODEX_DATA_[sRessName] !== undefined) {
 		__CODEX_DATA_[sRessName].forEach(function(r) {
@@ -198,7 +205,7 @@ function parser_getRessource(sRessName, nId) {
 		});
 	}
 
-	return res;
+	return Promise.resolve(res);
 }
 
 function replaceAll(str, find, replace) {
@@ -218,24 +225,37 @@ function parser_parseCdx(sPage)
 	let nSaveEnd = 0;
 	let sPageToParse = sPage;
 
-	string_forEachOccurence(sPage, _CDX_LEFT_, function(nStart)
+
+	string_forEachOccurenceAsync(sPage, _CDX_LEFT_, function(nStart)
 	{
-		nStart += nDiffLength;
-		let sContext = string_searchContain(sPageToParse.substr(nStart), _CDX_LEFT_ESCAPED_, _CDX_RIGHT_);
-		if (sContext.length == 0) { return };
+		return new Promise(function(resolve) {
+			nStart += nDiffLength;
+			let sContext = string_searchContain(sPageToParse.substr(nStart), _CDX_LEFT_ESCAPED_, _CDX_RIGHT_);
+			if (sContext.length == 0) { return };
 
-		let sContent = parser_getData(sContext);
+			let sContent = parser_getData(sContext);
 
-		if (sContent !== undefined) {
-			nDiffLength += sContent.length - (_CDX_LEFT_+sContext+_CDX_RIGHT_).length;
-			sPageToParse = sPageToParse.replace(_CDX_LEFT_+sContext+_CDX_RIGHT_, sContent);
-		}
+			sContent.then(function(sContent) {
+				if (sContent !== undefined) {
+					nDiffLength += sContent.length - (_CDX_LEFT_+sContext+_CDX_RIGHT_).length;
+					sPageToParse = sPageToParse.replace(_CDX_LEFT_+sContext+_CDX_RIGHT_, sContent);
+					resolve(sPageToParse);
+				}
+			});
+		});
+	}).then(function(ret) {
+		console.log(ret);
+		sPageToParse = ret;
+		// return ret;
 	});
+
+	// console.log(test);
+	// console.log(sPageToParse);
 
 	return sPageToParse;
 }
 
-function parser_getData(sContext) {
+async function parser_getData(sContext) {
 	let tbContext = sContext.split('.');
 	let sAttrName = tbContext[1].trim();
 	let tbRessource = tbContext[0].split('-');
@@ -248,33 +268,9 @@ function parser_getData(sContext) {
 		tbRessource[1] = __CODEX_CURRENT_RESSOURCE_ID_;
 	}
 
-	let ret = parser_getRessource(tbRessource[0], tbRessource[1]);
+	let ret = await parser_getRessource(tbRessource[0], tbRessource[1]);
 
 	return ret[sAttrName];
-}
-
-function parser_parseRessource(sCdx)
-{
-	let tbCdx = sCdx.split('.');
-	let sRessource = tbCdx[0].split('-');
-	let nRessId = sRessource[1];
-	sRessource = sRessource[0].trim();;
-	let sAttribute = tbCdx[1].trim();
-
-	let sValue = '';
-
-	if (nRessId != undefined) {
-		__CODEX_DATA_[sRessource].forEach((r) => {
-			if (nRessId == r.id) {
-				sValue = r[sAttribute];
-				return
-			}
-		});
-	} else {
-		return __CODEX_DATA_[sRessource][0][sAttribute];
-	}
-
-	return sValue;
 }
 
 /*=====  End of CDX PARSER  ======*/

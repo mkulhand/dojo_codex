@@ -11,10 +11,14 @@ var __CODEX_CURRENT_RESSOURCE_ID_ = 1;
 
 async function codex_init()
 {
-	// if (!await codex_getData()) {
-		__CODEX_DATA_ 	= await codex_API('ressource');
-		// codex_saveData();
-	// }
+		let tbData 	= await codex_API('ressource');
+
+		if (tbData !== undefined) {
+			__CODEX_DATA_ = tbData;
+			codex_saveData();
+		} else {
+			// await codex_getLocalData();
+		}
 
 	console.dir(__CODEX_DATA_);
 
@@ -24,10 +28,10 @@ async function codex_init()
 	router_execUrl();
 }
 
-function codex_getData() {
+function codex_getLocalData() {
 	return new Promise(function(resolve, reject) {
 		let req = new XMLHttpRequest();
-		req.open('GET', './codex/data.json');
+		req.open('GET', './codex/data/data.json');
 		req.onload = function()
 		{
 			if (req.response.length > 5) {
@@ -50,7 +54,7 @@ function codex_saveData() {
 
 	req.onload = function()
 	{
-		// console.log(req.response);
+		console.log(req.response);
 	}
 	req.send(fd);
 }
@@ -98,5 +102,29 @@ function codex_API(sRoute)
 		}
 
 		req.send()
+	});
+}
+
+function codex_fetchLocalRessource(sRessName)
+{
+	return new Promise(function(resolve, reject) {
+		let req = new XMLHttpRequest();
+		req.open('GET', './codex/data/'+sRessName+'.json');
+		req.onload = function()
+		{
+			if (req.response.length > 5) {
+				try {
+					__CODEX_DATA_[sRessName] = JSON.parse(req.response);
+					resolve(true);
+				}
+				catch {
+					console.trace();
+					resolve(false);
+				}
+			} else {
+				resolve(false);
+			}
+		}
+		req.send();
 	});
 }

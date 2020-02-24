@@ -4,7 +4,8 @@ var __CODEX_ROUTE_ = [];
 router_addRoute('plan');
 router_addRoute('horaire');
 router_addRoute('contact');
-router_addRoute('${Discipline.nom}');
+// router_addRoute('${Discipline.nom}');
+router_addRoute('test');
 
 function router_addRoute(sRoute)
 {
