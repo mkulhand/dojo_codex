@@ -1,4 +1,3 @@
-
 /*----------  CDX  ----------*/
 const _CDX_LEFT_ESCAPED_	 = '\\[cdx';
 const _CDX_LEFT_ 			 ='[cdx';
@@ -14,7 +13,7 @@ const _CDX_END_LOOP_ESCAPED_ = '\\[endloop]';
 const _CDX_END_LOOP_ = '[endloop]';
 
 
-async function parser_parse(sPage)
+function parser_parse(sPage)
 {
 	let tbLoop = parser_getLoops(sPage);
 	let nDiffLength = 0;
@@ -33,11 +32,9 @@ async function parser_parse(sPage)
 
 	});
 
-	sPage = await parser_parseCdx(sPage);
+	sPage = parser_parseCdx(sPage);
 
-	if (sPage !== undefined) {
-		sPage = replaceAll(sPage, _CDX_END_LOOP_ESCAPED_, '');
-	}
+	sPage = replaceAll(sPage, _CDX_END_LOOP_ESCAPED_, '');
 
 	return sPage;
 }
@@ -101,13 +98,13 @@ function parser_getLoopContext(sPage, nStart) {
 	return string_searchContain(sPage.substr(nStart), _CDX_LEFT_LOOP_ESCAPED_, _CDX_RIGHT_LOOP_).trim();
 }
 
-async function parser_parseLoop(oLoop)
+function parser_parseLoop(oLoop)
 {
 	let sRes = '';
 	let sSaveContent = '';
 
-	tbRess = await parser_parseContext(oLoop);
-	console.log(tbRess);
+	tbRess = parser_parseContext(oLoop);
+
 	let sContext = oLoop.context;
 
 	if (Array.isArray(tbRess) && tbRess.length > 0) {
@@ -119,13 +116,13 @@ async function parser_parseLoop(oLoop)
 			if (oLoop.children.length > 0)
 			{
 				let sParsedContent = '';
-				oLoop.children.forEach(async function(l)
+				oLoop.children.forEach(function(l)
 				{
 					let oSubLoop = {};
 					let sSubRes = '';
 					Object.assign(oSubLoop, l);
 					oSubLoop.context = l.context.replace('this', sLocalContext);
-					sSubRes += await parser_parseLoop(oSubLoop);
+					sSubRes += parser_parseLoop(oSubLoop);
 					if (sSubRes == 'undefined') {
 						sSubRes = '';
 					}
@@ -143,7 +140,7 @@ async function parser_parseLoop(oLoop)
 	}
 
 	if (sRes != '') {
-		return (sRes);
+		return sRes;
 	}
 }
 
@@ -152,7 +149,7 @@ function parser_thisReplacer(sLoopContent, sContext) {
 	return string_searchContain(sLoopContent, _CDX_RIGHT_LOOP_, _CDX_END_LOOP_ESCAPED_).substr(1).trim();
 }
 
-async function parser_parseContext(oLoop)
+function parser_parseContext(oLoop)
 {
 	let sContext = oLoop.context;
 	let tbContext = sContext.split('.');
@@ -160,9 +157,6 @@ async function parser_parseContext(oLoop)
 
 	if (tbContext.length == 1)
 	{
-		if (__CODEX_DATA_[sContext] == undefined) {
-			await codex_fetchLocalRessource(sContext);
-		}
 		aRes = __CODEX_DATA_[sContext];
 	}
 	else
@@ -187,7 +181,7 @@ async function parser_parseContext(oLoop)
 	return aRes;
 }
 
-async function parser_getRessource(sRessName, nId) {
+function parser_getRessource(sRessName, nId) {
 	let res;
 
 	if (nId == undefined && sRessName == __CODEX_CURRENT_RESSOURCE_NAME_) {
@@ -195,10 +189,6 @@ async function parser_getRessource(sRessName, nId) {
 	}
 
 	sRessName = sRessName.trim();
-
-	if (__CODEX_DATA_[sRessName] == undefined) {
-		await codex_fetchLocalRessource(sRessName);
-	}
 
 	if (__CODEX_DATA_[sRessName] !== undefined) {
 		__CODEX_DATA_[sRessName].forEach(function(r) {
@@ -208,7 +198,7 @@ async function parser_getRessource(sRessName, nId) {
 		});
 	}
 
-	return Promise.resolve(res);
+	return res;
 }
 
 function replaceAll(str, find, replace) {
@@ -224,39 +214,28 @@ function replaceAll(str, find, replace) {
 
 function parser_parseCdx(sPage)
 {
-	return new Promise(function(resolve) {
-		let nDiffLength = 0;
-		let nSaveEnd = 0;
-		let sPageToParse = sPage;
+	let nDiffLength = 0;
+	let nSaveEnd = 0;
+	let sPageToParse = sPage;
 
-		string_forEachOccurenceAsync(sPage, _CDX_LEFT_, function(nStart, sPageParsed)
-		{
-			return new Promise(function(resolve) {
-				if (sPageParsed !== undefined) {
-					sPageToParse = sPageParsed;
-				}
-				nStart += nDiffLength;
-				let sContext = string_searchContain(sPageToParse.substr(nStart), _CDX_LEFT_ESCAPED_, _CDX_RIGHT_);
-				if (sContext.length == 0) { return };
+	string_forEachOccurence(sPage, _CDX_LEFT_, function(nStart)
+	{
+		nStart += nDiffLength;
+		let sContext = string_searchContain(sPageToParse.substr(nStart), _CDX_LEFT_ESCAPED_, _CDX_RIGHT_);
+		if (sContext.length == 0) { return };
 
-				let sContent = parser_getData(sContext);
+		let sContent = parser_getData(sContext);
 
-				sContent.then(function(sContent) {
-					if (sContent !== undefined) {
-						nDiffLength += sContent.length - (_CDX_LEFT_+sContext+_CDX_RIGHT_).length;
-						sPageToParse = sPageToParse.replace(_CDX_LEFT_+sContext+_CDX_RIGHT_, sContent);
-						resolve(sPageToParse);
-					}
-				});
-			});
-		}).then(function(ret) {
-			console.log(ret);
-			resolve(ret);
-		});
+		if (sContent !== undefined) {
+			nDiffLength += sContent.length - (_CDX_LEFT_+sContext+_CDX_RIGHT_).length;
+			sPageToParse = sPageToParse.replace(_CDX_LEFT_+sContext+_CDX_RIGHT_, sContent);
+		}
 	});
+
+	return sPageToParse;
 }
 
-async function parser_getData(sContext) {
+function parser_getData(sContext) {
 	let tbContext = sContext.split('.');
 	let sAttrName = tbContext[1].trim();
 	let tbRessource = tbContext[0].split('-');
@@ -269,9 +248,33 @@ async function parser_getData(sContext) {
 		tbRessource[1] = __CODEX_CURRENT_RESSOURCE_ID_;
 	}
 
-	let ret = await parser_getRessource(tbRessource[0], tbRessource[1]);
+	let ret = parser_getRessource(tbRessource[0], tbRessource[1]);
 
 	return ret[sAttrName];
+}
+
+function parser_parseRessource(sCdx)
+{
+	let tbCdx = sCdx.split('.');
+	let sRessource = tbCdx[0].split('-');
+	let nRessId = sRessource[1];
+	sRessource = sRessource[0].trim();;
+	let sAttribute = tbCdx[1].trim();
+
+	let sValue = '';
+
+	if (nRessId != undefined) {
+		__CODEX_DATA_[sRessource].forEach((r) => {
+			if (nRessId == r.id) {
+				sValue = r[sAttribute];
+				return
+			}
+		});
+	} else {
+		return __CODEX_DATA_[sRessource][0][sAttribute];
+	}
+
+	return sValue;
 }
 
 /*=====  End of CDX PARSER  ======*/

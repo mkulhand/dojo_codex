@@ -1,6 +1,11 @@
 
-[cdxloop Discipline cdxloop]
 
-[cdx this.nom cdx]
+[cdxloop Categorie cdxloop]
+
+	<h1>[cdx this.nom cdx]</h1>
+
+	[cdxloop this.discipline cdxloop]
+		<h3>[cdx this.nom cdx]</h3>
+	[endloop]
 
 [endloop]

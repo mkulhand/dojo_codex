@@ -1,10 +1,10 @@
-// var __VORTEX_ADDR_ = 'http://127.0.0.1:3000/vortex/';
+var __VORTEX_ADDR_ = 'http://127.0.0.1:3000/vortex/';
 // var __VORTEX_ADDR_ = 'http://mathias-kulhandjian.fr/vortex/';
-var __VORTEX_ADDR_ = 'http://127.0.0.1/vortex/';
+// var __VORTEX_ADDR_ = 'http://127.0.0.1/vortex/';
 
-// var __CODEX_ADDR_ = 'http://127.0.0.1:3000/dojo_codex/';
+var __CODEX_ADDR_ = 'http://127.0.0.1:3000/dojo_codex/';
 // var __CODEX_ADDR_ = 'http://mathias-kulhandjian.fr/dojo_codex/';
-var __CODEX_ADDR_ = 'http://127.0.0.1/dojo_codex/';
+// var __CODEX_ADDR_ = 'http://127.0.0.1/dojo_codex/';
 
 var __CLIENT_NAME_ = 'dojo';
 var __CODEX_DATA_ = {};
@@ -18,14 +18,11 @@ async function codex_init()
 		if (tbData !== undefined) {
 			__CODEX_DATA_ = tbData;
 			codex_saveData();
-		} else {
-			// await codex_getLocalData();
 		}
 
-	console.dir(__CODEX_DATA_);
 
-	codex_parseCodex('style', 'css');
-	codex_parseCodex('menu', 'top-menu');
+	await codex_parseCodex('style', 'css');
+	await codex_parseCodex('menu', 'top-menu');
 
 	router_execUrl();
 }
@@ -63,13 +60,17 @@ function codex_saveData() {
 
 function codex_parseCodex(sPageName, sContainerId)
 {
-	let req = new XMLHttpRequest();
-	req.open('GET', './page/'+sPageName+'.html');
-	req.onload = async function()
-	{
-		document.getElementById(sContainerId).innerHTML = await parser_parse(req.response);
-	}
-	req.send();
+	return new Promise((resolve) => {
+		let req = new XMLHttpRequest();
+		req.open('GET', './page/'+sPageName+'.html');
+		req.onload = async function()
+		{
+			await router_match(sPageName);
+			document.getElementById(sContainerId).innerHTML =  parser_parse(req.response);
+			resolve();
+		}
+		req.send();
+	});
 }
 
 function codex_API(sRoute)
@@ -87,7 +88,6 @@ function codex_API(sRoute)
 						JSON.parse(req.response);
 					}
 					catch {
-						console.log(req.response);
 						return false;
 					}
 					let response = JSON.parse(req.response);
@@ -110,23 +110,27 @@ function codex_API(sRoute)
 function codex_fetchLocalRessource(sRessName)
 {
 	return new Promise(function(resolve, reject) {
-		let req = new XMLHttpRequest();
-		req.open('GET', './codex/data/'+sRessName+'.json');
-		req.onload = function()
+		if (typeof __CODEX_DATA_[sRessName] == 'undefined')
 		{
-			if (req.response.length > 5) {
-				try {
-					__CODEX_DATA_[sRessName] = JSON.parse(req.response);
-					resolve(true);
-				}
-				catch {
-					console.trace();
+			let req = new XMLHttpRequest();
+			req.open('GET', './codex/data/'+sRessName+'.json');
+			req.onload = function()
+			{
+				if (req.response.length > 5) {
+					try {
+						__CODEX_DATA_[sRessName] = JSON.parse(req.response);
+						resolve(true);
+					}
+					catch {
+						resolve(false);
+					}
+				} else {
 					resolve(false);
 				}
-			} else {
-				resolve(false);
 			}
+			req.send();
+		} else {
+			resolve();
 		}
-		req.send();
 	});
 }
