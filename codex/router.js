@@ -41,6 +41,16 @@ router_add({
 	ressource: ['Categorie', 'Discipline', 'Contact', 'Accueil']
 })
 
+router_add({
+	route: 'association',
+	ressource: ['Association']
+});
+
+router_add({
+	route: 'location',
+	ressource: ['Salle']
+});
+
 function router_add(oConfig)
 {
 	__CODEX_ROUTE_.push(oConfig);
@@ -49,20 +59,23 @@ function router_add(oConfig)
 
 async function router_execUrl(sPageQuery = window.location.href)
 {
-	__CODEX_CURRENT_RESSOURCE_NAME_ = '';
-	__CODEX_CURRENT_RESSOURCE_ID_ = 1;
+	return new Promise(async (resolve) => {
+		__CODEX_CURRENT_RESSOURCE_NAME_ = '';
+		__CODEX_CURRENT_RESSOURCE_ID_ = 1;
 
-	sPageQuery = sPageQuery.split(__CODEX_ADDR_)[1];
+		sPageQuery = sPageQuery.split(__CODEX_ADDR_)[1];
 
-	if (sPageQuery == '' || sPageQuery == 'home') {
-		sPageQuery = 'home';
-	}
+		if (sPageQuery == '' || sPageQuery == 'home') {
+			sPageQuery = 'home';
+		}
 
-	if (!(sPageQuery = await router_match(sPageQuery))) {
-		sPageQuery = '404';
-	}
+		if (!(sPageQuery = await router_match(sPageQuery))) {
+			sPageQuery = '404';
+		}
 
-	await codex_parseCodex(sPageQuery, 'content');
+		await codex_parseCodex(sPageQuery, 'content');
+		resolve();
+	});
 }
 
 function router_match(sPageQuery)
@@ -106,8 +119,10 @@ function router_match(sPageQuery)
 
 function router_includeRessource(oRoute) {
 	return new Promise(async (resolve) => {
-		for(let i = 0; i < oRoute.ressource.length; i++) {
-			await codex_fetchLocalRessource(oRoute.ressource[i]);
+		if (oRoute.ressource != undefined) {
+			for(let i = 0; i < oRoute.ressource.length; i++) {
+				await codex_fetchLocalRessource(oRoute.ressource[i]);
+			}
 		}
 		resolve();
 	});

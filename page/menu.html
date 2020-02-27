@@ -1,7 +1,10 @@
-<img onclick="router_go('home');" class="logo" src="[cdx Accueil.logo cdx]">
+
+<img onclick="router_go('home'); menu_resetItem()" class="logo" src="[cdx Accueil.logo cdx]">
 <div class="menuLink">
-	<div onclick="router_go('contact');"><h3>Contact</h3></div>
-	<div onclick="router_go('horaire');"><h3>Horaires/Tarif</h3></div>
+	<div class='menuItem' onclick="menu_activateItem(this); router_go('contact');"><h3>Contact</h3></div>
+	<div class='menuItem' onclick="menu_activateItem(this); router_go('horaire');"><h3>Horaires/Tarif</h3></div>
+	<div class='menuItem' onclick="menu_activateItem(this); router_go('association');"><h3>Association</h3></div>
+	<div class='menuItem' onclick="menu_activateItem(this); router_go('location');"><h3>Location</h3></div>
 </div>
 
 <style>
@@ -36,6 +39,10 @@
 }
 
 #top-menu > .menuLink > div:hover {
+	background-color: rgb(216, 216, 216);
+}
+
+.menuItemActif {
 	background-color: rgb(216, 216, 216);
 }
 </style>

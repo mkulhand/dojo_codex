@@ -13,35 +13,19 @@ var __CODEX_CURRENT_RESSOURCE_ID_ = 1;
 
 async function codex_init()
 {
-		let tbData 	= await codex_API('ressource');
+	let tbData 	= await codex_API('ressource');
 
-		if (tbData !== undefined) {
-			__CODEX_DATA_ = tbData;
-			codex_saveData();
-		}
+	if (tbData !== undefined) {
+		__CODEX_DATA_ = tbData;
+		codex_saveData();
+	}
 
+	console.log(__CODEX_DATA_);
 
 	await codex_parseCodex('style', 'css');
 	await codex_parseCodex('menu', 'top-menu');
 
 	router_execUrl();
-}
-
-function codex_getLocalData() {
-	return new Promise(function(resolve, reject) {
-		let req = new XMLHttpRequest();
-		req.open('GET', './codex/data/data.json');
-		req.onload = function()
-		{
-			if (req.response.length > 5) {
-				__CODEX_DATA_ = JSON.parse(req.response);
-				resolve(true);
-			} else {
-				resolve(false);
-			}
-		}
-		req.send();
-	});
 }
 
 function codex_saveData() {
@@ -53,7 +37,7 @@ function codex_saveData() {
 
 	req.onload = function()
 	{
-		console.log(req.response);
+		// console.log(req.response);
 	}
 	req.send(fd);
 }

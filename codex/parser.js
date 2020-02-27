@@ -19,7 +19,6 @@ function parser_parse(sPage)
 	let nDiffLength = 0;
 
 	tbLoop.forEach((oLoop, i) => {
-
 		parser_shiftLoop(oLoop, nDiffLength);
 
 		let sLoopContent = parser_parseLoop(oLoop);
@@ -108,6 +107,7 @@ function parser_parseLoop(oLoop)
 	let sContext = oLoop.context;
 
 	if (Array.isArray(tbRess) && tbRess.length > 0) {
+		let i = 0;
 		tbRess.forEach(function(r)
 		{
 			sSaveContent = oLoop.content;
@@ -128,25 +128,23 @@ function parser_parseLoop(oLoop)
 					}
 					sParsedContent = oLoop.content.replace(oLoop.content.slice(l.start - oLoop.start, l.end - oLoop.end), sSubRes);
 				});
-				sParsedContent = parser_thisReplacer(sParsedContent, sContext+'-'+r.id);
+				let nId = (r.id == undefined) ? i : r.id;
+				sParsedContent = parser_thisReplacer(sParsedContent, sContext+'-'+nId);
 				sRes += sParsedContent;
 			}
 			else
 			{
-				sLoopContent = parser_thisReplacer(oLoop.content, sContext+'-'+r.id);
+				let nId = (r.id == undefined) ? i : r.id;
+				sLoopContent = parser_thisReplacer(oLoop.content, sContext+'-'+nId);
 				sRes += sLoopContent;
 			}
+			i++;
 		});
 	}
 
 	if (sRes != '') {
 		return sRes;
 	}
-}
-
-function parser_thisReplacer(sLoopContent, sContext) {
-	sLoopContent = replaceAll(sLoopContent, 'this', sContext);
-	return string_searchContain(sLoopContent, _CDX_RIGHT_LOOP_, _CDX_END_LOOP_ESCAPED_).substr(1).trim();
 }
 
 function parser_parseContext(oLoop)
@@ -170,39 +168,22 @@ function parser_parseContext(oLoop)
 			{
 				tbRessource = JSON.parse(tbRessource[tbContext[1]]);
 				tbRessource.forEach(function(r) {
-					r = JSON.parse(r);
-					aRes.push(parser_getRessource(r.type, r.id));
-					oLoop.context = r.type;
+					try
+					{
+						r = JSON.parse(r);
+						aRes.push(parser_getRessource(r.type, r.id));
+						oLoop.context = r.type;
+					}
+					catch
+					{
+						aRes.push(tbRessource);
+					}
 				});
 			}
 		}
 	}
 
 	return aRes;
-}
-
-function parser_getRessource(sRessName, nId) {
-	let res;
-
-	if (nId == undefined && sRessName == __CODEX_CURRENT_RESSOURCE_NAME_) {
-		nId = __CODEX_CURRENT_RESSOURCE_ID_;
-	}
-
-	sRessName = sRessName.trim();
-
-	if (__CODEX_DATA_[sRessName] !== undefined) {
-		__CODEX_DATA_[sRessName].forEach(function(r) {
-			if (r.id == Number(nId)) {
-				res = r;
-			}
-		});
-	}
-
-	return res;
-}
-
-function replaceAll(str, find, replace) {
-	return str.replace(new RegExp(find, 'g'), replace);
 }
 
 /*=====  End of CDX LOOP PARSER  ======*/
@@ -222,6 +203,7 @@ function parser_parseCdx(sPage)
 	{
 		nStart += nDiffLength;
 		let sContext = string_searchContain(sPageToParse.substr(nStart), _CDX_LEFT_ESCAPED_, _CDX_RIGHT_);
+
 		if (sContext.length == 0) { return };
 
 		let sContent = parser_getData(sContext);
@@ -239,42 +221,72 @@ function parser_getData(sContext) {
 	let tbContext = sContext.split('.');
 	let sAttrName = tbContext[1].trim();
 	let tbRessource = tbContext[0].split('-');
+	let ret = '';
 
 	if (tbRessource.length <= 1) {
 		tbRessource[1] = 1;
 	}
 
-	if (tbRessource[0].trim() == __CODEX_CURRENT_RESSOURCE_NAME_) {
+	tbRessource[0] = tbRessource[0].trim();
+
+	if (tbRessource[0] == __CODEX_CURRENT_RESSOURCE_NAME_) {
 		tbRessource[1] = __CODEX_CURRENT_RESSOURCE_ID_;
 	}
 
-	let ret = parser_getRessource(tbRessource[0], tbRessource[1]);
+	nIndexMultiple = sAttrName.split('-')[1];
 
-	return ret[sAttrName];
-}
-
-function parser_parseRessource(sCdx)
-{
-	let tbCdx = sCdx.split('.');
-	let sRessource = tbCdx[0].split('-');
-	let nRessId = sRessource[1];
-	sRessource = sRessource[0].trim();;
-	let sAttribute = tbCdx[1].trim();
-
-	let sValue = '';
-
-	if (nRessId != undefined) {
-		__CODEX_DATA_[sRessource].forEach((r) => {
-			if (nRessId == r.id) {
-				sValue = r[sAttribute];
-				return
-			}
-		});
-	} else {
-		return __CODEX_DATA_[sRessource][0][sAttribute];
+	if (nIndexMultiple != undefined)
+	{
+		sAttrName = sAttrName.split('-')[0];
+		ret = parser_getRessource(tbRessource[0], tbRessource[1]);
+		ret = JSON.parse(ret[sAttrName])[nIndexMultiple];
+	}
+	else
+	{
+		ret = parser_getRessource(tbRessource[0], tbRessource[1]);
+		ret = ret[sAttrName];
 	}
 
-	return sValue;
+	return ret;
+}
+
+function parser_getRessourceMultiple(sRessName, sAttrName, nIndex)
+{
+
+}
+
+function parser_getRessource(sRessName, nId) {
+	let res;
+
+	if (nId == undefined && sRessName == __CODEX_CURRENT_RESSOURCE_NAME_) {
+		nId = __CODEX_CURRENT_RESSOURCE_ID_;
+	}
+
+	if (nId == undefined) {
+		nId = 1;
+	}
+
+	sRessName = sRessName.trim();
+
+	if (__CODEX_DATA_[sRessName] !== undefined) {
+		__CODEX_DATA_[sRessName].forEach(function(r) {
+			if (r.id == Number(nId)) {
+				res = r;
+			}
+		});
+	}
+
+	return res;
 }
 
 /*=====  End of CDX PARSER  ======*/
+
+
+function replaceAll(str, find, replace) {
+	return str.replace(new RegExp(find, 'g'), replace);
+}
+
+function parser_thisReplacer(sLoopContent, sContext) {
+	sLoopContent = replaceAll(sLoopContent, 'this', sContext);
+	return string_searchContain(sLoopContent, _CDX_RIGHT_LOOP_, _CDX_END_LOOP_ESCAPED_).substr(1).trim();
+}

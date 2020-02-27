@@ -1,0 +1,45 @@
+
+<div id="main">
+	<div class='desc'>
+		[cdx Association.texte cdx]
+	</div>
+</div>
+
+<div id="right">
+	<h2>Découvrez le dojo en photo: </h2>
+	<div class="gallery">
+		[cdxloop Association.galerie cdxloop]
+		<img src="[cdx this cdx]">
+		[endloop]
+	</div>
+</div>
+
+<style>
+	#content {
+		display: flex;
+	}
+
+	#main {
+		width: 75%;
+		background-color: var(--second-color);
+	}
+
+	#main > .desc {
+		padding: 6%;
+	}
+
+	#right {
+		width: 25%;
+	}
+
+	#right > h2 {
+		text-align: center;
+		margin: 20px 0;
+	}
+
+	/* GALLERY */
+	.gallery > img {
+		width: 33.3%;
+		height: 15%;
+	}
+</style>

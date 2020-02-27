@@ -1,0 +1,34 @@
+
+[cdxloop Salle cdxloop]
+
+<div class="salle">
+	<h1>[cdx this.nom cdx]</h1>
+	[cdx this.description cdx]
+	<div class="gallery">
+		[cdxloop this.photo cdxloop]
+			<img src="[cdx this cdx]">
+		[endloop]
+	</div>
+</div>
+
+[endloop]
+
+<style>
+	.salle {
+		display: flex;
+		flex-direction: column;
+		margin: 1%;
+		padding: 20px;
+		background-color: var(--second-color);
+	}
+
+	.salle > .gallery {
+		display: flex;
+		flex-direction: row;
+		height: 60%;
+	}
+
+	.salle > .gallery > img {
+		width: 30%;
+	}
+</style>
