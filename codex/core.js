@@ -42,7 +42,7 @@ function codex_saveData() {
 	req.send(fd);
 }
 
-function codex_parseCodex(sPageName, sContainerId)
+function codex_parseCodex(sPageName, sContainerId = null)
 {
 	return new Promise((resolve) => {
 		let req = new XMLHttpRequest();
@@ -50,8 +50,13 @@ function codex_parseCodex(sPageName, sContainerId)
 		req.onload = async function()
 		{
 			await router_match(sPageName);
-			document.getElementById(sContainerId).innerHTML =  parser_parse(req.response);
-			resolve();
+			let sContent = await parser_parse(req.response);
+
+			if (sContainerId != null) {
+				document.getElementById(sContainerId).innerHTML = sContent;
+			}
+			resolve(sContent);
+
 		}
 		req.send();
 	});

@@ -5,7 +5,6 @@ function menu_activateItem(e) {
 }
 
 function menu_resetItem() {
-	console.log('?');
 	Array.from(document.getElementsByClassName("menuItem")).forEach(function(item) {
 		item.classList.remove('menuItemActif');
 	});

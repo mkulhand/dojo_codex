@@ -2,16 +2,25 @@
 <img onclick="router_go('home'); menu_resetItem()" class="logo" src="[cdx Accueil.logo cdx]">
 <div class="menuLink">
 	<div class='menuItem' onclick="menu_activateItem(this); router_go('contact');"><h3>Contact</h3></div>
-	<div class='menuItem' onclick="menu_activateItem(this); router_go('horaire');"><h3>Horaires/Tarif</h3></div>
+	<div class='menuItem' onclick="menu_activateItem(this); router_go('horaire');"><h3>Horaires/Tarifs</h3></div>
 	<div class='menuItem' onclick="menu_activateItem(this); router_go('association');"><h3>Association</h3></div>
 	<div class='menuItem' onclick="menu_activateItem(this); router_go('location');"><h3>Location</h3></div>
+	<a class='menuItem' onclick="menu_activateItem(this);" href="https://www.instagram.com/explore/locations/304101099/dojo-yoseikan-budo/?hl=fr">
+		<img src="./assets/instagram.png">
+	</a>
+	<a class='menuItem' onclick="menu_activateItem(this);" href="https://www.youtube.com/user/GILLESMORARD">
+		<img src="./assets/youtube.png">
+	</a>
+	<a class='menuItem' onclick="menu_activateItem(this);" href="https://www.facebook.com/Dojo-Yoseikan-Budo-338728042878806/">
+		<img src="./assets/facebook.png">
+	</a>
 </div>
 
 <style>
 #top-menu {
 	display: flex;
 	flex-direction: row;
-	height: 6%;
+	height: 4%;
 	background-color: whitesmoke;
 }
 #top-menu > .logo {
@@ -24,21 +33,28 @@
 	display: flex;
 	flex-direction: row-reverse;
 	margin-left: auto;
+	padding-right: 10px;
 }
 
-#top-menu > .menuLink > div {
+#top-menu > .menuLink > .menuItem {
 	height: 100%;
+	width: fit-content;
 	float: right;
 	cursor: pointer;
 	display: flex;
-	padding: 0 10px;
+	padding: 0 7px;
 }
 
-#top-menu > .menuLink > div > h3{
+#top-menu > .menuLink > .menuItem > h3{
 	margin: auto;
 }
 
-#top-menu > .menuLink > div:hover {
+#top-menu > .menuLink > .menuItem > img{
+	height: 50%;
+	margin: auto 0;
+}
+
+#top-menu > .menuLink > .menuItem:hover {
 	background-color: rgb(216, 216, 216);
 }
 

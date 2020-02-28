@@ -22,12 +22,13 @@ function string_forEachOccurenceAsync(sHaystack, sNeedle, fFunc)
 
 			let res = await fFunc(nStart, sRet);
 			sRet = res;
+			tbReturn.push(res);
 
 			nStart += sNeedle.length;
 			nSaveStart = nStart;
 		}
 
-		resolve(sRet);
+		resolve(tbReturn);
 	});
 }
 

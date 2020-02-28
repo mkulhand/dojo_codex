@@ -1,61 +1,114 @@
 
 var __CODEX_ROUTE_ = [];
 
+/*=============================
+=            ROUTE            =
+=============================*/
+
+
+/*----------  HOME  ----------*/
 router_add({
-	route: 'plan',
+	route: 'home',
+	ressource: ['Categorie', 'Discipline', 'Contact', 'Accueil'],
+	callback: () => {
+		Array.from(document.getElementsByClassName("disc-item")).forEach(function(item) {
+			item.addEventListener('mouseenter', (e) => {
+				showBanner(e.target.id);
+			});
+			item.addEventListener('mouseleave', (e) => {
+				showBanner('default');
+			});
+		});
+	}
 });
 
-router_add({
-	route: 'horaire',
-	ressource: ['Horaire']
-});
-
+/*----------  STYLE  ----------*/
 router_add({
 	route: 'style',
 	ressource: ['font']
-})
+});
 
+/*----------  MENU  ----------*/
 router_add({
 	route: 'menu',
 	ressource: ['Accueil']
 })
 
+/*----------  PLAN  ----------*/
+router_add({
+	route: 'plan',
+});
+
+/*----------  HORAIRE  ----------*/
+router_add({
+	route: 'horaire',
+	ressource: ['Horaire']
+});
+
+/*----------  CONTACT  ----------*/
 router_add({
 	route: 'contact',
 	ressource: ['Contact']
 });
 
+/*----------  DISCIPLINE  ----------*/
 router_add({
 	route: '${Discipline.nom}',
 	ressource: ['Discipline', 'Prof'],
-	page: 'discipline.html'
+	page: 'discipline',
+	callback: (e) => {
+		let r = e.specificRessource;
+		for (let i in __CODEX_DATA_['Categorie'])
+		{
+			let c = __CODEX_DATA_['Categorie'][i];
+			let tbDisc = JSON.parse(c.discipline);
+			for (let j in tbDisc)
+			{
+				let d = JSON.parse(tbDisc[j]);
+				if (d.id == r.id) {
+					let eCateg = document.getElementById('categ-'+c['id']);
+					eCateg.children[1].classList.add('disc-wrapper-hovered');
+					document.getElementById(r.nom).classList.add('disc-item-hovered');
+				}
+			}
+		}
+	}
 });
 
-router_add({
-	route: 'test',
-	ressource: ['Categorie', 'Discipline']
-});
 
-router_add({
-	route: 'home',
-	ressource: ['Categorie', 'Discipline', 'Contact', 'Accueil']
-})
-
+/*----------  ASSOCIATION  ----------*/
 router_add({
 	route: 'association',
-	ressource: ['Association']
+	ressource: ['Association'],
+	callback: () => {
+		gallery_init();
+	}
 });
 
+/*----------  LOCATION  ----------*/
 router_add({
 	route: 'location',
 	ressource: ['Salle']
 });
 
+router_add({
+	route: 'categWidget',
+	ressource: ['Categorie', 'Discipline']
+})
+
+
+/*=====  End of ROUTE  ======*/
+
+
+/*=================================
+=            FUNCTIONS            =
+=================================*/
+
+
 function router_add(oConfig)
 {
 	__CODEX_ROUTE_.push(oConfig);
 }
-
 
 async function router_execUrl(sPageQuery = window.location.href)
 {
@@ -69,11 +122,24 @@ async function router_execUrl(sPageQuery = window.location.href)
 			sPageQuery = 'home';
 		}
 
-		if (!(sPageQuery = await router_match(sPageQuery))) {
+		let oRoute = await router_match(sPageQuery);
+
+		if (!oRoute) {
 			sPageQuery = '404';
 		}
 
+		if (oRoute.page == undefined) {
+			sPageQuery = oRoute.route;
+		} else {
+			sPageQuery = oRoute.page;
+		}
+
 		await codex_parseCodex(sPageQuery, 'content');
+
+		if (oRoute.callback != undefined) {
+			oRoute.callback(oRoute);
+		}
+
 		resolve();
 	});
 }
@@ -98,7 +164,8 @@ function router_match(sPageQuery)
 					c = __CODEX_DATA_[tbContext[0]][j];
 					if (sPageQuery == c[tbContext[1]])
 					{
-						ret = tbContext[0];
+						ret = r;
+						r.specificRessource = c;
 						__CODEX_CURRENT_RESSOURCE_NAME_ = tbContext[0];
 						__CODEX_CURRENT_RESSOURCE_ID_ = c.id;
 						await router_includeRessource(r);
@@ -108,7 +175,7 @@ function router_match(sPageQuery)
 				if (r.route == sPageQuery)
 				{
 					await router_includeRessource(r);
-					ret = sPageQuery;
+					ret = r;
 				}
 			}
 		}
@@ -137,3 +204,5 @@ function router_go(sPageName) {
 	window.history.pushState(null, '', window.location.href);
 	window.history.replaceState(null, '', sPageName);
 }
+
+/*=====  End of FUNCTIONS  ======*/

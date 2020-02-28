@@ -12,30 +12,39 @@ const _CDX_RIGHT_LOOP_ = 'cdxloop]';
 const _CDX_END_LOOP_ESCAPED_ = '\\[endloop]';
 const _CDX_END_LOOP_ = '[endloop]';
 
+/*----------  CDX COMPONENT  ----------*/
+const _CDX_LEFT_COMPONENT_ = '[component';
+const _CDX_LEFT_COMPONENT_ESCAPED_ = '\\[component';
+const _CDX_RIGHT_COMPONENT_ = 'component]';
+
 
 function parser_parse(sPage)
 {
-	let tbLoop = parser_getLoops(sPage);
-	let nDiffLength = 0;
+	return new Promise(async (resolve) => {
+		let tbLoop = parser_getLoops(sPage);
+		let nDiffLength = 0;
 
-	tbLoop.forEach((oLoop, i) => {
-		parser_shiftLoop(oLoop, nDiffLength);
+		tbLoop.forEach((oLoop, i) => {
+			parser_shiftLoop(oLoop, nDiffLength);
 
-		let sLoopContent = parser_parseLoop(oLoop);
-		let sToReplace = sPage.slice(oLoop.start, oLoop.end);
-		sPage = sPage.replace(sToReplace, sLoopContent);
+			let sLoopContent = parser_parseLoop(oLoop);
+			let sToReplace = sPage.slice(oLoop.start, oLoop.end);
+			sPage = sPage.replace(sToReplace, sLoopContent);
 
-		if (sLoopContent !== undefined) {
-			nDiffLength += sLoopContent.length - sToReplace.length;
-		}
+			if (sLoopContent !== undefined) {
+				nDiffLength += sLoopContent.length - sToReplace.length;
+			}
 
+		});
+
+		sPage = parser_parseCdx(sPage);
+
+		sPage = replaceAll(sPage, _CDX_END_LOOP_ESCAPED_, '');
+
+		sPage = await parser_parseCdxComponent(sPage);
+
+		resolve(sPage);
 	});
-
-	sPage = parser_parseCdx(sPage);
-
-	sPage = replaceAll(sPage, _CDX_END_LOOP_ESCAPED_, '');
-
-	return sPage;
 }
 
 function parser_shiftLoop(oLoop, nDiffLength) {
@@ -48,6 +57,40 @@ function parser_shiftLoop(oLoop, nDiffLength) {
 		});
 	}
 }
+
+/*============================================
+=            CDX COMPONENT PARSER            =
+============================================*/
+
+function parser_parseCdxComponent(sPage)
+{
+	return new Promise(async (resolve) => {
+		let tbComponentParsed = await string_forEachOccurenceAsync(sPage, _CDX_LEFT_COMPONENT_, function(nStart, aTransverse)
+		{
+
+			if (aTransverse != undefined) {
+				sPage = sTransverse;
+			}
+
+			return new Promise(async (resolve) => {
+				let sComponent = string_searchContain(sPage.substr(nStart), _CDX_LEFT_COMPONENT_ESCAPED_, _CDX_RIGHT_COMPONENT_).trim();
+
+				sComponentContent = await codex_parseCodex(sComponent);
+
+				resolve(sPage.replace(_CDX_LEFT_COMPONENT_+' '+sComponent+' '+_CDX_RIGHT_COMPONENT_, sComponentContent));
+			})
+		});
+
+		if (tbComponentParsed.length != 0) {
+			sPage = tbComponentParsed[tbComponentParsed.length - 1]
+		}
+
+		resolve(sPage);
+	});
+}
+
+/*=====  End of CDX COMPONENT PARSER  ======*/
+
 
 /*=======================================
 =            CDX LOOP PARSER            =
@@ -223,15 +266,7 @@ function parser_getData(sContext) {
 	let tbRessource = tbContext[0].split('-');
 	let ret = '';
 
-	if (tbRessource.length <= 1) {
-		tbRessource[1] = 1;
-	}
-
 	tbRessource[0] = tbRessource[0].trim();
-
-	if (tbRessource[0] == __CODEX_CURRENT_RESSOURCE_NAME_) {
-		tbRessource[1] = __CODEX_CURRENT_RESSOURCE_ID_;
-	}
 
 	nIndexMultiple = sAttrName.split('-')[1];
 
@@ -248,11 +283,6 @@ function parser_getData(sContext) {
 	}
 
 	return ret;
-}
-
-function parser_getRessourceMultiple(sRessName, sAttrName, nIndex)
-{
-
 }
 
 function parser_getRessource(sRessName, nId) {

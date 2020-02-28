@@ -1,10 +1,15 @@
 <html>
 	<head>
+		<!-- CODEX -->
 		<script src="./codex/router.js"></script>
 		<script src="./codex/string.js"></script>
 		<script src="./codex/parser.js"></script>
 		<script src="./codex/core.js"></script>
+		<!-- CORE SCRIPT-->
+		<script src="./js/home.js"></script>
 		<script src="./js/menu.js"></script>
+		<script src="./js/gallery.js"></script>
+		<!-- CORE STYLE-->
 		<link rel="stylesheet" href="./style/style.css">
 		<link rel="stylesheet" href="./style/dojo.css">
 		<link rel="stylesheet" href="./style/quillsnow.css">
@@ -21,17 +26,4 @@
 
 <script>
 codex_init();
-</script>
-
-<script>
-function showBanner(sDiscName) {
-	let tbBanners = document.getElementsByClassName('bannerImg');
-
-	for (let b of tbBanners) {
-		b.style.display = 'none';
-	}
-
-	let eBanner = document.getElementsByClassName(sDiscName+'-banner');
-	eBanner[0].style.display = 'block';
-}
 </script>

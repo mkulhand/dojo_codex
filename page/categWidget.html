@@ -1,0 +1,77 @@
+
+<div id="categ">
+	[cdxloop Categorie cdxloop]
+		<div id="categ-[cdx this.id cdx]" class='categ-item'>
+			<h3>[cdx this.nom cdx]</h3>
+			<div class="disc-wrapper">
+				[cdxloop this.discipline cdxloop]
+					<h5 id="[cdx this.nom cdx]" class="disc-item" onclick="router_go('[cdx this.nom cdx]')">[cdx this.nom cdx]</h5>
+				[endloop]
+			</div>
+		</div>
+	[endloop]
+</div>
+
+<style>
+#categ {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+}
+.categ-item {
+	font-size: 27px;
+	text-transform: uppercase;
+	padding: 10px 15px;
+	padding-bottom: 0px;
+	cursor: pointer;
+}
+
+.categ-item:hover .disc-wrapper {
+	height: auto;
+	opacity: 1;
+	z-index: 10;
+}
+
+.disc-wrapper-hovered {
+	height: auto !important;
+	opacity: 1 !important;
+	z-index: 10 !important;
+}
+
+.disc-wrapper-hovered > h5 {
+	display: block !important;
+	padding: 5px 14px;
+}
+
+.categ-item:hover .disc-wrapper > h5 {
+	display: block !important;
+	padding: 5px 14px;
+}
+
+.disc-wrapper {
+	position: absolute;
+	left: 0;
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	background-color: #0031757a;
+	color: white;
+	height: 0;
+	opacity: 0;
+	z-index: 0;
+	transition-duration: 0.2s;
+}
+
+.disc-wrapper > h5 {
+	display: none;
+}
+
+.disc-wrapper > h5:hover {
+	background-color: var(--prim-color);
+}
+
+.disc-item-hovered {
+	background-color: var(--prim-color) !important;
+}
+</style>
