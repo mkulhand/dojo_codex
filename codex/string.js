@@ -53,3 +53,7 @@ function string_forEachOccurence(sHaystack, sNeedle, fFunc)
 
 	return (tbReturn);
 }
+
+function replaceAll(str, find, replace) {
+	return str.replace(new RegExp(find, 'g'), replace);
+}

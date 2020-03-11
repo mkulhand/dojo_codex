@@ -311,11 +311,6 @@ function parser_getRessource(sRessName, nId) {
 
 /*=====  End of CDX PARSER  ======*/
 
-
-function replaceAll(str, find, replace) {
-	return str.replace(new RegExp(find, 'g'), replace);
-}
-
 function parser_thisReplacer(sLoopContent, sContext) {
 	sLoopContent = replaceAll(sLoopContent, 'this', sContext);
 	return string_searchContain(sLoopContent, _CDX_RIGHT_LOOP_, _CDX_END_LOOP_ESCAPED_).substr(1).trim();

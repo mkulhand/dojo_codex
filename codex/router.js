@@ -93,7 +93,14 @@ router_add({
 
 router_add({
 	route: 'categWidget',
-	ressource: ['Categorie', 'Discipline']
+	ressource: ['Categorie', 'Discipline'],
+	callback: () => {
+		Array.from(document.getElementsByClassName("categ-item")).forEach(function(item) {
+			let posLeft = item.children[0].getBoundingClientRect().left;
+			item.children[1].children[0].style.marginLeft = posLeft+'px';
+		});
+
+	}
 })
 
 
@@ -110,42 +117,21 @@ function router_add(oConfig)
 	__CODEX_ROUTE_.push(oConfig);
 }
 
-async function router_execUrl(sPageQuery = window.location.href)
-{
-	return new Promise(async (resolve) => {
-		__CODEX_CURRENT_RESSOURCE_NAME_ = '';
-		__CODEX_CURRENT_RESSOURCE_ID_ = 1;
-
-		sPageQuery = sPageQuery.split(__CODEX_ADDR_)[1];
-
-		if (sPageQuery == '' || sPageQuery == 'home') {
-			sPageQuery = 'home';
-		}
-
-		let oRoute = await router_match(sPageQuery);
-
-		if (!oRoute) {
-			sPageQuery = '404';
-		}
-
-		if (oRoute.page == undefined) {
-			sPageQuery = oRoute.route;
-		} else {
-			sPageQuery = oRoute.page;
-		}
-
-		await codex_parseCodex(sPageQuery, 'content');
-
-		if (oRoute.callback != undefined) {
-			oRoute.callback(oRoute);
-		}
-
-		resolve();
-	});
-}
-
 function router_match(sPageQuery)
 {
+	__CODEX_CURRENT_RESSOURCE_NAME_ = '';
+	__CODEX_CURRENT_RESSOURCE_ID_ = 1;
+
+	sPageQuery = replaceAll(sPageQuery, '%20', ' ');
+
+	sPageQuery = sPageQuery.split(__CODEX_ADDR_);
+
+	sPageQuery = (sPageQuery[1] != undefined) ? sPageQuery[1] : sPageQuery[0];
+
+	if (sPageQuery == '' || sPageQuery == 'home') {
+		sPageQuery = 'home';
+	}
+
 	return new Promise(async (resolve) => {
 		let ret = false;
 
@@ -180,6 +166,10 @@ function router_match(sPageQuery)
 			}
 		}
 
+		if (ret == false) {
+			ret = {route: '404'}
+		}
+
 		resolve(ret);
 	})
 }
@@ -196,11 +186,11 @@ function router_includeRessource(oRoute) {
 }
 
 window.onpopstate = function(event) {
-	router_execUrl();
+	codex_parseCodex(window.location.href, 'content');
 };
 
 function router_go(sPageName) {
-	router_execUrl(__CODEX_ADDR_+sPageName);
+	codex_parseCodex(__CODEX_ADDR_+sPageName, 'content');
 	window.history.pushState(null, '', window.location.href);
 	window.history.replaceState(null, '', sPageName);
 }

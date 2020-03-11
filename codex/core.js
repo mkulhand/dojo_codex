@@ -1,31 +1,29 @@
-var __VORTEX_ADDR_ = 'http://127.0.0.1:3000/vortex/';
 // var __VORTEX_ADDR_ = 'http://mathias-kulhandjian.fr/vortex/';
-// var __VORTEX_ADDR_ = 'http://127.0.0.1/vortex/';
+var __VORTEX_ADDR_ = 'http://127.0.0.1/vortex/';
 
-var __CODEX_ADDR_ = 'http://127.0.0.1:3000/dojo_codex/';
-// var __CODEX_ADDR_ = 'http://mathias-kulhandjian.fr/dojo_codex/';
-// var __CODEX_ADDR_ = 'http://127.0.0.1/dojo_codex/';
+// var __CODEX_ADDR_ = 'http://mathias-kulhandjian.fr/dojo/';
+var __CODEX_ADDR_ = 'http://127.0.0.1/dojo/';
 
 var __CLIENT_NAME_ = 'dojo';
-var __CODEX_DATA_ = {};
+var __CODEX_DATA_ = [];
 var __CODEX_CURRENT_RESSOURCE_NAME_ = '';
 var __CODEX_CURRENT_RESSOURCE_ID_ = 1;
+
+var __CODEX_CALLBACK_QUEUE_ = [];
 
 async function codex_init()
 {
 	let tbData 	= await codex_API('ressource');
 
-	if (tbData !== undefined) {
+	if (tbData.length > 0) {
 		__CODEX_DATA_ = tbData;
 		codex_saveData();
 	}
 
-	console.log(__CODEX_DATA_);
-
 	await codex_parseCodex('style', 'css');
 	await codex_parseCodex('menu', 'top-menu');
 
-	router_execUrl();
+	await codex_parseCodex(window.location.href, 'content');
 }
 
 function codex_saveData() {
@@ -35,28 +33,31 @@ function codex_saveData() {
 	let fd = new FormData();
 	fd.append('data', JSON.stringify(__CODEX_DATA_));
 
-	req.onload = function()
-	{
-		// console.log(req.response);
-	}
 	req.send(fd);
 }
 
-function codex_parseCodex(sPageName, sContainerId = null)
+async function codex_parseCodex(sPageQuery, sContainerId = null)
 {
+	let oRoute = await router_match(sPageQuery);
+	let sPageName = (oRoute.page != undefined) ? oRoute.page : oRoute.route;
 	return new Promise((resolve) => {
 		let req = new XMLHttpRequest();
 		req.open('GET', './page/'+sPageName+'.html');
 		req.onload = async function()
 		{
-			await router_match(sPageName);
 			let sContent = await parser_parse(req.response);
-
 			if (sContainerId != null) {
 				document.getElementById(sContainerId).innerHTML = sContent;
+				if (oRoute.callback != undefined) {
+					oRoute.callback(oRoute);
+				}
+				__CODEX_CALLBACK_QUEUE_.forEach((cb) => {
+					cb();
+				});
+			} else {
+				__CODEX_CALLBACK_QUEUE_.push(oRoute.callback);
 			}
 			resolve(sContent);
-
 		}
 		req.send();
 	});
